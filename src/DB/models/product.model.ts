@@ -1,4 +1,9 @@
-import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
+import mongoose, {
+  Schema,
+  model,
+  type InferSchemaType,
+  type Model,
+} from "mongoose";
 
 const localizedRequiredSchema = new Schema(
   {
@@ -41,55 +46,38 @@ const warrantySchema = new Schema(
   { _id: false },
 );
 
-const dimensionsSchema = new Schema(
-  {
-    length: { type: Number, min: 0 },
-    width: { type: Number, min: 0 },
-    height: { type: Number, min: 0 },
-  },
-  { _id: false },
-);
-
-const tractorDetailsSchema = new Schema(
-  {
-    horsepower: { type: Number, min: 0 },
-    engine: { type: String, trim: true },
-    driveType: { type: String, enum: ["2WD", "4WD"] },
-    hoursUsed: { type: Number, min: 0 },
-  },
-  { _id: false },
-);
-
-const partDetailsSchema = new Schema(
-  {
-    partNumber: { type: String, trim: true },
-    oemNumber: { type: String, trim: true },
-    compatibleMachines: [{ type: Schema.Types.ObjectId, ref: "Machine" }],
-  },
-  { _id: false },
-);
-
 const productSchema = new Schema(
   {
     name: { type: localizedRequiredSchema, required: true },
-    slug: { type: String, required: true, trim: true, lowercase: true, unique: true },
-    description: { type: localizedOptionalSchema },
-    type: {
+    slug: {
       type: String,
-      enum: ["tractor", "tractor_part", "car_part"],
+      required: true,
+      trim: true,
+      lowercase: true,
+      unique: true,
+    },
+    description: { type: localizedOptionalSchema },
+    categoryId: {
+      type: Schema.Types.ObjectId,
+      ref: "Category",
       required: true,
     },
-    categoryId: { type: Schema.Types.ObjectId, ref: "Category", required: true },
     brandId: { type: Schema.Types.ObjectId, ref: "Brand" },
+    // SKU is the unique business/inventory code for this product, separate from MongoDB's _id.
     sku: { type: String, required: true, trim: true, unique: true },
     images: { type: [String], default: [] },
     price: { type: Number, required: true, min: 0 },
-    salePrice: { type: Number, min: 0 },
+    discountPrice: { type: Number, min: 0 },
     currency: { type: String, enum: ["EGP"], default: "EGP" },
     stockQuantity: { type: Number, default: 0, min: 0 },
     stockStatus: {
       type: String,
-      enum: ["in_stock", "out_of_stock", "preorder", "contact_for_availability"],
+      enum: [
+        "in_stock",
+        "out_of_stock",
+        "preorder",
+        "contact_for_availability",
+      ],
       default: "in_stock",
     },
     condition: {
@@ -99,11 +87,10 @@ const productSchema = new Schema(
     },
     warranty: { type: warrantySchema },
     specs: { type: [productSpecSchema], default: [] },
-    tags: { type: localizedStringArraySchema, default: () => ({ ar: [], en: [] }) },
-    weight: { type: Number, min: 0 },
-    dimensions: { type: dimensionsSchema },
-    tractorDetails: { type: tractorDetailsSchema },
-    partDetails: { type: partDetailsSchema },
+    tags: {
+      type: localizedStringArraySchema,
+      default: () => ({ ar: [], en: [] }),
+    },
     isFeatured: { type: Boolean, default: false },
     isPublished: { type: Boolean, default: false },
   },
@@ -114,17 +101,12 @@ productSchema.index({ categoryId: 1, type: 1, isPublished: 1 });
 productSchema.index({ brandId: 1, isPublished: 1 });
 productSchema.index({ stockStatus: 1, isPublished: 1 });
 productSchema.index({ price: 1 });
-productSchema.index({ "partDetails.partNumber": 1 });
-productSchema.index({ "partDetails.oemNumber": 1 });
-productSchema.index({ "partDetails.compatibleMachines": 1 });
 productSchema.index({
   "name.ar": "text",
   "name.en": "text",
   "description.ar": "text",
   "description.en": "text",
   sku: "text",
-  "partDetails.partNumber": "text",
-  "partDetails.oemNumber": "text",
   "tags.ar": "text",
   "tags.en": "text",
 });
@@ -132,5 +114,5 @@ productSchema.index({
 export type Product = InferSchemaType<typeof productSchema>;
 
 export const ProductModel =
-  (models.Product as Model<Product> | undefined) ??
+  (mongoose.models.Product as Model<Product> | undefined) ??
   model<Product>("Product", productSchema);

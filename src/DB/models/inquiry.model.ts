@@ -1,4 +1,9 @@
-import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
+import mongoose, {
+  Schema,
+  model,
+  type InferSchemaType,
+  type Model,
+} from "mongoose";
 
 const inquirySchema = new Schema(
   {
@@ -30,5 +35,5 @@ inquirySchema.index({ phone: 1, createdAt: -1 });
 export type Inquiry = InferSchemaType<typeof inquirySchema>;
 
 export const InquiryModel =
-  (models.Inquiry as Model<Inquiry> | undefined) ??
+  (mongoose.models.Inquiry as Model<Inquiry> | undefined) ??
   model<Inquiry>("Inquiry", inquirySchema);

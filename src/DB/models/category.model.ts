@@ -1,4 +1,9 @@
-import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
+import mongoose, {
+  Schema,
+  model,
+  type InferSchemaType,
+  type Model,
+} from "mongoose";
 
 const localizedRequiredSchema = new Schema(
   {
@@ -22,23 +27,19 @@ const categorySchema = new Schema(
     slug: { type: localizedRequiredSchema, required: true },
     description: { type: localizedOptionalSchema },
     parentId: { type: Schema.Types.ObjectId, ref: "Category" },
-    type: {
-      type: String,
-      enum: ["tractor", "tractor_part", "car_part"],
-      required: true,
-    },
     image: { type: String, trim: true },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
 
+// Keep localized slugs unique and speed up common category tree lookups.
 categorySchema.index({ "slug.ar": 1 }, { unique: true });
 categorySchema.index({ "slug.en": 1 }, { unique: true });
-categorySchema.index({ parentId: 1, type: 1, isActive: 1 });
+categorySchema.index({ parentId: 1, isActive: 1 });
 
 export type Category = InferSchemaType<typeof categorySchema>;
 
 export const CategoryModel =
-  (models.Category as Model<Category> | undefined) ??
+  (mongoose.models.Category as Model<Category> | undefined) ??
   model<Category>("Category", categorySchema);

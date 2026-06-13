@@ -1,4 +1,9 @@
-import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
+import mongoose, {
+  Schema,
+  model,
+  type InferSchemaType,
+  type Model,
+} from "mongoose";
 
 const cartItemSchema = new Schema(
   {
@@ -12,6 +17,7 @@ const cartItemSchema = new Schema(
 const cartSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User" },
+    // Identifies a guest cart when there is no logged-in userId.
     sessionId: { type: String, trim: true },
     items: { type: [cartItemSchema], default: [] },
     expiresAt: { type: Date },
@@ -26,4 +32,5 @@ cartSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 export type Cart = InferSchemaType<typeof cartSchema>;
 
 export const CartModel =
-  (models.Cart as Model<Cart> | undefined) ?? model<Cart>("Cart", cartSchema);
+  (mongoose.models.Cart as Model<Cart> | undefined) ??
+  model<Cart>("Cart", cartSchema);

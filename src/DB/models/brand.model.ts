@@ -1,4 +1,9 @@
-import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
+import mongoose, {
+  Schema,
+  model,
+  type InferSchemaType,
+  type Model,
+} from "mongoose";
 
 const localizedRequiredSchema = new Schema(
   {
@@ -19,11 +24,12 @@ const localizedOptionalSchema = new Schema(
 const brandSchema = new Schema(
   {
     name: { type: localizedRequiredSchema, required: true },
-    slug: { type: String, required: true, trim: true, lowercase: true, unique: true },
-    type: {
+    slug: {
       type: String,
-      enum: ["tractor", "car", "part", "general"],
-      default: "general",
+      required: true,
+      trim: true,
+      lowercase: true,
+      unique: true,
     },
     logo: { type: String, trim: true },
     description: { type: localizedOptionalSchema },
@@ -37,4 +43,5 @@ brandSchema.index({ type: 1, isActive: 1 });
 export type Brand = InferSchemaType<typeof brandSchema>;
 
 export const BrandModel =
-  (models.Brand as Model<Brand> | undefined) ?? model<Brand>("Brand", brandSchema);
+  (mongoose.models.Brand as Model<Brand> | undefined) ??
+  model<Brand>("Brand", brandSchema);

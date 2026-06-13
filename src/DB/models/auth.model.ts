@@ -1,4 +1,9 @@
-import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
+import mongoose, {
+  Schema,
+  model,
+  type InferSchemaType,
+  type Model,
+} from "mongoose";
 
 const refreshTokenSchema = new Schema(
   {
@@ -11,10 +16,11 @@ const refreshTokenSchema = new Schema(
 );
 
 refreshTokenSchema.index({ userId: 1 });
+// MongoDB automatically deletes each token after its expiresAt date.
 refreshTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export type RefreshToken = InferSchemaType<typeof refreshTokenSchema>;
 
 export const RefreshTokenModel =
-  (models.RefreshToken as Model<RefreshToken> | undefined) ??
+  (mongoose.models.RefreshToken as Model<RefreshToken> | undefined) ??
   model<RefreshToken>("RefreshToken", refreshTokenSchema);

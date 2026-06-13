@@ -1,4 +1,9 @@
-import { Schema, model, models, type InferSchemaType, type Model } from "mongoose";
+import mongoose, {
+  Schema,
+  model,
+  type InferSchemaType,
+  type Model,
+} from "mongoose";
 
 const addressSchema = new Schema(
   {
@@ -18,7 +23,13 @@ const addressSchema = new Schema(
 const userSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
-    email: { type: String, trim: true, lowercase: true, sparse: true, unique: true },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      sparse: true,
+      unique: true,
+    },
     phone: { type: String, required: true, trim: true, unique: true },
     password: { type: String, required: true, select: false },
     roleId: { type: Schema.Types.ObjectId, ref: "Role", required: true },
@@ -34,4 +45,5 @@ userSchema.index({ roleId: 1 });
 export type User = InferSchemaType<typeof userSchema>;
 
 export const UserModel =
-  (models.User as Model<User> | undefined) ?? model<User>("User", userSchema);
+  (mongoose.models.User as Model<User> | undefined) ??
+  model<User>("User", userSchema);
