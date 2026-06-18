@@ -4,7 +4,7 @@ export enum StoreInEnum {
 }
 
 export const FileType = {
-  image: ["image/jpg", "image/jpeg", "image/png", "image/gif", "image/webp"],
+  image: ["image/jpg", "image/jpeg", "image/png", "image/webp"],
   video: ["video/mp4", "video/webm"],
 };
 

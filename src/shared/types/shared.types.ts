@@ -1,11 +1,11 @@
 export enum Gender {
-  male = "MALE",
-  female = "FEMALE",
+  male = "male",
+  female = "female",
 }
 
 export enum AuthProvider {
-  local = "LOCAL",
-  google = "GOOGLE",
+  local = "local",
+  google = "google",
 }
 
 export interface PaginationMeta {

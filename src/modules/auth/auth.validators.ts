@@ -1,6 +1,26 @@
 import { z } from "zod";
 import { Gender } from "../../shared/types/shared.types.js";
 
+// ============================ googleRegisterSchema ============================
+export const googleRegisterSchema = z.object({
+  googleToken: z.string().min(1, "Google token is required"),
+  phone: z
+    .string()
+    .min(8, "Phone must be at least 8 characters")
+    .max(20, "Phone must be at most 20 characters")
+    .trim(),
+});
+
+// ============================ googleLoginSchema ============================
+export const googleLoginSchema = z.object({
+  googleToken: z.string().min(1, "Google token is required"),
+});
+
+// ============================ refreshTokenSchema ============================
+export const refreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, "Refresh token is required"),
+});
+
 // ============================ registerSchema ============================
 export const registerSchema = z.object({
   name: z
@@ -28,35 +48,15 @@ export const verifyEmailSchema = z.object({
   code: z.string().min(4, "Code must be at least 4 characters").trim(),
 });
 
+// ============================ emailSchema ============================
+export const emailSchema = z.object({
+  email: z.email("Invalid email format").toLowerCase().trim(),
+});
+
 // ============================ loginSchema ============================
 export const loginSchema = z.object({
   email: z.email("Invalid email format").toLowerCase().trim(),
   password: z.string().min(1, "Password is required"),
-});
-
-// ============================ googleRegisterSchema ============================
-export const googleRegisterSchema = z.object({
-  googleToken: z.string().min(1, "Google token is required"),
-  phone: z
-    .string()
-    .min(8, "Phone must be at least 8 characters")
-    .max(20, "Phone must be at most 20 characters")
-    .trim(),
-});
-
-// ============================ googleLoginSchema ============================
-export const googleLoginSchema = z.object({
-  googleToken: z.string().min(1, "Google token is required"),
-});
-
-// ============================ refreshTokenSchema ============================
-export const refreshTokenSchema = z.object({
-  refreshToken: z.string().min(1, "Refresh token is required"),
-});
-
-// ============================ emailSchema ============================
-export const emailSchema = z.object({
-  email: z.email("Invalid email format").toLowerCase().trim(),
 });
 
 // ============================ resetPasswordSchema ============================

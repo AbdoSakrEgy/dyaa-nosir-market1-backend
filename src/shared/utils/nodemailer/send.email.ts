@@ -11,13 +11,13 @@ export const sendEmail = async ({
   html: string;
 }) => {
   const transporter = createTransport({
-    host: env.HOST_EMAIL as string,
-    port: 465,
+    host: env.NODEMAILER_HOST as string,
+    port: env.NODEMAILER_PORT,
     secure: true,
     service: "gmail",
     auth: {
-      user: env.SENDER_EMAIL,
-      pass: env.GOOGLE_APP_PASSWORD,
+      user: env.NODEMAILER_SENDER_EMAIL,
+      pass: env.NODEMAILER_SENDER_EMAIL_GOOGLE_APP_PASSWORD,
     },
     // tls: {
     //   rejectUnauthorized: false, // Only for development
@@ -25,7 +25,7 @@ export const sendEmail = async ({
   });
   try {
     const info = await transporter.sendMail({
-      from: `${env.APP_NAME} <${env.SENDER_EMAIL}>`, // sender address
+      from: `${env.APP_NAME} <${env.NODEMAILER_SENDER_EMAIL}>`, // sender address
       to, // list of receivers
       subject, // Subject line
       html, // html body

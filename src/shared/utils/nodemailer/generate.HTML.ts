@@ -76,7 +76,7 @@ export const template = ({
     </div>
     <div class="email-body">
       <h2>Hello ${receiverName},</h2>
-      <p>Thank you for signing up with us. To complete your registration and start using your account, please getotpCcode to ${subject}</p>
+      <p>Thank you for signing up with us. To complete your registration and start using your account, please get otp code to ${subject}</p>
       <h2 class="activation-button">${otpCode}</h2>
       <p>If you did not sign up for this account, please ignore this email.</p>
       <p>Best regards,<br>Abdulrahim Sakr</p>

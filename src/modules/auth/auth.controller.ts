@@ -85,18 +85,18 @@ export class AuthController {
     responseHandler(res, HttpStatusCode.OK, "Email verified successfully");
   }
 
-  // ---------------------------- login ----------------------------
-  async login(req: Request, res: Response): Promise<void> {
-    const data = req.body as LoginDTO;
-    const result = await authService.login(data);
-    responseHandler(res, HttpStatusCode.OK, "Login successful", result);
-  }
-
   // ---------------------------- resendVerificationEmail ----------------------------
   async resendVerificationEmail(req: Request, res: Response): Promise<void> {
     const data = req.body as EmailDTO;
     await authService.resendVerificationEmail(data.email);
     responseHandler(res, HttpStatusCode.OK, "Verification email sent");
+  }
+
+  // ---------------------------- login ----------------------------
+  async login(req: Request, res: Response): Promise<void> {
+    const data = req.body as LoginDTO;
+    const result = await authService.login(data);
+    responseHandler(res, HttpStatusCode.OK, "Login successful", result);
   }
 
   // ---------------------------- forgotPassword ----------------------------

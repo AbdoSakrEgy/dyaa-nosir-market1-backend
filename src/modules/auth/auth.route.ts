@@ -19,22 +19,22 @@ import { authenticate } from "../../middlewares/authenticate.js";
 const router = Router();
 
 router.post(
-  "/google/register",
-  limitAuthRequests,
+  "/google-register",
+  // limitAuthRequests,
   validate({ body: googleRegisterSchema }),
   asyncHandler(authController.googleRegister.bind(authController)),
 );
 
 router.post(
-  "/google/login",
-  limitAuthRequests,
+  "/google-login",
+  // limitAuthRequests,
   validate({ body: googleLoginSchema }),
   asyncHandler(authController.googleLogin.bind(authController)),
 );
 
 router.post(
   "/refresh-token",
-  limitAuthRequests,
+  // limitAuthRequests,
   validate({ body: refreshTokenSchema }),
   asyncHandler(authController.refreshToken.bind(authController)),
 );
@@ -53,42 +53,42 @@ router.get(
 
 router.post(
   "/register",
-  limitAuthRequests,
+  // limitAuthRequests,
   validate({ body: registerSchema }),
   asyncHandler(authController.register.bind(authController)),
 );
 
 router.post(
   "/verify-email",
-  limitAuthRequests,
+  // limitAuthRequests,
   validate({ body: verifyEmailSchema }),
   asyncHandler(authController.verifyEmail.bind(authController)),
 );
 
 router.post(
-  "/login",
-  limitAuthRequests,
-  validate({ body: loginSchema }),
-  asyncHandler(authController.login.bind(authController)),
-);
-
-router.post(
   "/resend-verification-email",
-  limitAuthRequests,
+  // limitAuthRequests,
   validate({ body: emailSchema }),
   asyncHandler(authController.resendVerificationEmail.bind(authController)),
 );
 
 router.post(
+  "/login",
+  // limitAuthRequests,
+  validate({ body: loginSchema }),
+  asyncHandler(authController.login.bind(authController)),
+);
+
+router.post(
   "/forgot-password",
-  limitAuthRequests,
+  // limitAuthRequests,
   validate({ body: emailSchema }),
   asyncHandler(authController.forgotPassword.bind(authController)),
 );
 
 router.post(
   "/reset-password",
-  limitAuthRequests,
+  // limitAuthRequests,
   validate({ body: resetPasswordSchema }),
   asyncHandler(authController.resetPassword.bind(authController)),
 );
@@ -96,7 +96,7 @@ router.post(
 router.patch(
   "/change-password",
   authenticate,
-  limitAuthRequests,
+  // limitAuthRequests,
   validate({ body: changePasswordSchema }),
   asyncHandler(authController.changePassword.bind(authController)),
 );

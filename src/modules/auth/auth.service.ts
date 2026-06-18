@@ -7,8 +7,8 @@ import {
 import { hashData, compareData } from "../../shared/utils/bcrypt.js";
 import { verifyRefreshToken } from "../../shared/utils/jwt.js";
 import { generateOtp } from "../../shared/utils/generate.otp.js";
-import { sendEmail } from "../../shared/utils/send-email/send.email.js";
-import { template } from "../../shared/utils/send-email/generate.HTML.js";
+import { sendEmail } from "../../shared/utils/nodemailer/send.email.js";
+import { template } from "../../shared/utils/nodemailer/generate.HTML2.js";
 import { UserModel } from "../../DB/models/user/user.model.js";
 import { RefreshTokenModel } from "../../DB/models/user/auth.model.js";
 import { RoleModel } from "../../DB/models/user/role.model.js";
@@ -143,11 +143,18 @@ export class AuthService {
 
   // ============================ logout ============================
   async logout(refreshToken: string): Promise<void> {
+    // step: find valid stored token
+    const storedToken = await RefreshTokenModel.findOne({
+      token: refreshToken,
+      revokedAt: { $exists: false },
+      expiresAt: { $gt: new Date() },
+    });
+
+    if (!storedToken) throw new UnauthorizedError("Invalid refresh token");
+
     // step: revoke refresh token
-    await RefreshTokenModel.findOneAndUpdate(
-      { token: refreshToken },
-      { revokedAt: new Date() },
-    );
+    storedToken.revokedAt = new Date();
+    await storedToken.save();
   }
 
   // ============================ me ============================
@@ -197,7 +204,7 @@ export class AuthService {
     });
 
     // step: send otp code via email
-    await sendEmail({
+    const { isEmailSended, info } = await sendEmail({
       to: data.email,
       subject: "Verify your email",
       html: template({
@@ -251,37 +258,6 @@ export class AuthService {
     await user.save();
   }
 
-  // ============================ login ============================
-  async login(data: LoginDTO) {
-    // step: find active user
-    const user = await UserModel.findOne({
-      email: data.email,
-      isActive: true,
-      authProvider: AuthProvider.local,
-    }).select("+password");
-
-    // step: validate password
-    if (!user?.password || !(await compareData(data.password, user.password))) {
-      throw new UnauthorizedError("Invalid email or password");
-    }
-
-    // step: create auth session
-    const tokens = await createSession(String(user._id), String(user.roleId));
-
-    // step: result
-    return {
-      user: {
-        id: String(user._id),
-        name: user.name,
-        email: user.email,
-        phone: user.phone,
-        roleId: String(user.roleId),
-        emailConfirmed: user.isEmailConfirmed,
-      },
-      ...tokens,
-    };
-  }
-
   // ============================ resendVerificationEmail ============================
   async resendVerificationEmail(email: string): Promise<void> {
     // step: find user with email otp
@@ -312,6 +288,37 @@ export class AuthService {
         subject: "Verify your email",
       }),
     });
+  }
+
+  // ============================ login ============================
+  async login(data: LoginDTO) {
+    // step: find active user
+    const user = await UserModel.findOne({
+      email: data.email,
+      isActive: true,
+      authProvider: AuthProvider.local,
+    }).select("+password");
+
+    // step: validate password
+    if (!user?.password || !(await compareData(data.password, user.password))) {
+      throw new UnauthorizedError("Invalid email or password");
+    }
+
+    // step: create auth session
+    const tokens = await createSession(String(user._id), String(user.roleId));
+
+    // step: result
+    return {
+      user: {
+        id: String(user._id),
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        roleId: String(user.roleId),
+        emailConfirmed: user.isEmailConfirmed,
+      },
+      ...tokens,
+    };
   }
 
   // ============================ forgotPassword ============================

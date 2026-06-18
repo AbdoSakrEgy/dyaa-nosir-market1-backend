@@ -5,16 +5,16 @@ import {
   UnauthorizedError,
 } from "../../../shared/utils/error/app.error.js";
 
-const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+const googleClient = new OAuth2Client(env.GOOGLE_WEB_CLIENT_ID);
 
 export async function verifyGoogleToken(googleToken: string) {
-  if (!env.GOOGLE_CLIENT_ID) {
+  if (!env.GOOGLE_WEB_CLIENT_ID) {
     throw new BadRequestError("Google login is not configured");
   }
 
   const ticket = await googleClient.verifyIdToken({
     idToken: googleToken,
-    audience: env.GOOGLE_CLIENT_ID,
+    audience: env.GOOGLE_WEB_CLIENT_ID,
   });
   const payload = ticket.getPayload();
 
