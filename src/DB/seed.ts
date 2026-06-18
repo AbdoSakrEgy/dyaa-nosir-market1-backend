@@ -1,17 +1,17 @@
 ﻿import bcrypt from "bcrypt";
 import { connectDatabase, disconnectDatabase } from "./database.js";
-import { BrandModel } from "./models/brand.model.js";
-import { CartModel } from "./models/cart.model.js";
-import { CategoryModel } from "./models/category.model.js";
-import { CouponModel } from "./models/coupon.model.js";
+import { BrandModel } from "./models/product/brand.model.js";
+import { CartModel } from "./models/shopping/cart.model.js";
+import { CategoryModel } from "./models/product/category.model.js";
+import { CouponModel } from "./models/shopping/coupon.model.js";
 import { InquiryModel } from "./models/inquiry.model.js";
-import { OrderModel } from "./models/order.model.js";
-import { PaymentModel } from "./models/payment.model.js";
-import { ProductModel } from "./models/product.model.js";
-import { ReviewModel } from "./models/review.model.js";
-import { RoleModel } from "./models/role.model.js";
-import { StockTransactionModel } from "./models/stock-transaction.model.js";
-import { UserModel } from "./models/user.model.js";
+import { OrderModel } from "./models/shopping/order.model.js";
+import { PaymentModel } from "./models/shopping/payment.model.js";
+import { ProductModel } from "./models/product/product.model.js";
+import { ReviewModel } from "./models/shopping/review.model.js";
+import { StockTransactionModel } from "./models/shopping/stock-transaction.model.js";
+import { UserModel } from "./models/user/user.model.js";
+import { RoleModel } from "./models/user/role.model.js";
 
 const seedDatabase = async (): Promise<void> => {
   await connectDatabase();
@@ -78,7 +78,7 @@ const seedDatabase = async (): Promise<void> => {
     phone: "01000000001",
     password,
     roleId: adminRole._id,
-    isVerified: true,
+    isEmailConfirmed: true,
   });
 
   await UserModel.create({
@@ -87,7 +87,7 @@ const seedDatabase = async (): Promise<void> => {
     phone: "01000000002",
     password,
     roleId: superAdminRole._id,
-    isVerified: true,
+    isEmailConfirmed: true,
   });
 
   const customer = await UserModel.create({
@@ -96,17 +96,7 @@ const seedDatabase = async (): Promise<void> => {
     phone: "01000000003",
     password,
     roleId: customerRole._id,
-    addresses: [
-      {
-        label: "Home",
-        city: "Cairo",
-        area: "Nasr City",
-        street: "Abbas El Akkad",
-        building: "10",
-        isDefault: true,
-      },
-    ],
-    isVerified: true,
+    isEmailConfirmed: true,
   });
 
   const tractorCategory = await CategoryModel.create({

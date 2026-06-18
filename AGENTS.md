@@ -1,5 +1,12 @@
 # Repository Guidelines
 
+## Project Idea
+
+This project is for an existing offline shop that sells tractors, tractor spare parts, and car spare parts. The new website should display the shop's products to customers and support two paths when someone wants a product:
+
+- The customer can contact the shop directly for questions, quotes, or availability checks.
+- The customer can use the website to place an order, pay, and buy online.
+
 ## Project Structure & Module Organization
 
 This is a Node.js 20+ Express API written in TypeScript and emitted to `dist/`.

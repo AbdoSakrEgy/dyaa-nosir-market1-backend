@@ -7,12 +7,15 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
-export interface LoginResponse {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
-  tokens: AuthTokens;
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  roleId: string;
+  emailConfirmed: boolean;
+}
+
+export interface AuthResponse extends AuthTokens {
+  user: AuthUser;
 }

@@ -6,7 +6,7 @@ import { decodeToken } from "../shared/utils/decode.token.js";
  *
  * Flow:
  * 1. Pass authorization header to decodeToken utility
- * 2. Attach decoded payload to (req as any).user
+ * 2. Attach decoded payload to (req as any).payload
  * 3. Pass to next middleware
  */
 export const authenticate = (

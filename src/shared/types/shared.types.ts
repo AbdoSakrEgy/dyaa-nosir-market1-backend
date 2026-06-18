@@ -1,7 +1,6 @@
-export enum UserRole {
-  ADMIN = "ADMIN",
-  USER = "USER",
-  GUEST = "GUEST",
+export enum Gender {
+  male = "MALE",
+  female = "FEMALE",
 }
 
 export interface PaginationMeta {

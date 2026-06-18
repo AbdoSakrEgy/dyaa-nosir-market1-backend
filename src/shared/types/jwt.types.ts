@@ -1,6 +1,6 @@
 export interface MyJwtPayload {
-  userId: number;
-  userPhone: string;
+  userId: string;
+  roleId: string;
   iat: number;
   exp: number;
   jti: string;
@@ -8,5 +8,5 @@ export interface MyJwtPayload {
 
 export interface AuthPayload {
   userId: string;
-  role: any;
+  roleId: string;
 }
