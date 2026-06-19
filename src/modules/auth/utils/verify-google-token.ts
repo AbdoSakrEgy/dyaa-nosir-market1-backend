@@ -12,10 +12,17 @@ export async function verifyGoogleToken(googleToken: string) {
     throw new BadRequestError("Google login is not configured");
   }
 
-  const ticket = await googleClient.verifyIdToken({
-    idToken: googleToken,
-    audience: env.GOOGLE_WEB_CLIENT_ID,
-  });
+  let ticket;
+
+  try {
+    ticket = await googleClient.verifyIdToken({
+      idToken: googleToken,
+      audience: env.GOOGLE_WEB_CLIENT_ID,
+    });
+  } catch {
+    throw new UnauthorizedError("Invalid or expired Google token");
+  }
+
   const payload = ticket.getPayload();
 
   if (!payload?.sub || !payload.email || !payload.email_verified) {

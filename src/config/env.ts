@@ -38,16 +38,6 @@ export const env = {
   // ======================== bcrypt.ts ========================
   BCRYPT_SALT: process.env["SALT"] ?? "",
 
-  // ======================== limit.requests.ts ========================
-  RATE_LIMIT_WINDOW_MS: parseInt(
-    process.env["RATE_LIMIT_WINDOW_MS"] ?? "900000",
-    10,
-  ),
-  RATE_LIMIT_MAX_REQUESTS: parseInt(
-    process.env["RATE_LIMIT_MAX_REQUESTS"] ?? "100",
-    10,
-  ),
-
   // ======================== send.email.ts ========================
   NODEMAILER_HOST: process.env["NODEMAILER_HOST"] ?? "",
   NODEMAILER_PORT: parseInt(process.env["NODEMAILER_PORT"] ?? "587", 10),

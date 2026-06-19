@@ -1,5 +1,6 @@
 import { createTransport } from "nodemailer";
 import { env } from "../../../config/env.js";
+import { logger } from "../../../config/logger.js";
 
 export const sendEmail = async ({
   to,
@@ -34,6 +35,7 @@ export const sendEmail = async ({
       Array.isArray(info?.accepted) && info.accepted.length > 0;
     return { isEmailSended, info };
   } catch (err) {
+    logger.error({ err, to, subject }, "Email send failed");
     return { isEmailSended: false, err: err + "" };
   }
 };

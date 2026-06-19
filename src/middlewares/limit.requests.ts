@@ -5,22 +5,95 @@ import { HttpStatusCode } from "../shared/utils/response/http.status.code.js";
 /**
  * Rate limiting middleware to prevent abuse and DDoS attacks.
  *
- * Configurable per-route or globally. Uses the default in-memory store,
- * which is sufficient for single-instance deployments.
- *
- * For multi-instance (clustered/containerized) deployments,
- * switch to rate-limit-redis or rate-limit-memcached.
+ * The default in-memory store is sufficient for single-instance deployments.
+ * Multi-instance deployments should use a shared store such as Redis.
  */
 
-/** Global rate limiter — applied to all routes via app.use() */
-export const limitRequests = rateLimit({
-  windowMs: env.RATE_LIMIT_WINDOW_MS,
-  max: env.RATE_LIMIT_MAX_REQUESTS,
-  standardHeaders: true, // Return rate limit info in `RateLimit-*` headers
-  legacyHeaders: false, // Old servers used headers starting with X-, removes those old headers to keep your response clean
-  message: {
-    success: false,
-    message: "Too many requests — please try again later",
-  },
-  statusCode: HttpStatusCode.TOO_MANY_REQUESTS,
-});
+const MINUTE_MS = 60 * 1000;
+
+const createLimiter = (max: number, windowMs: number, message: string) =>
+  rateLimit({
+    windowMs,
+    max,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: {
+      success: false,
+      message,
+    },
+    statusCode: HttpStatusCode.TOO_MANY_REQUESTS,
+  });
+
+// ============================ global ============================
+export const limitRequests = createLimiter(
+  300,
+  15 * MINUTE_MS,
+  "Too many requests — please try again later",
+);
+
+// ============================ auth ============================
+export const limitGoogleRegisterRequests = createLimiter(
+  5,
+  60 * MINUTE_MS,
+  "Too many Google registration attempts — please try again after 1 hour",
+);
+
+export const limitGoogleLoginRequests = createLimiter(
+  5,
+  15 * MINUTE_MS,
+  "Too many Google login attempts — please try again after 15 minutes",
+);
+
+export const limitRefreshTokenRequests = createLimiter(
+  30,
+  15 * MINUTE_MS,
+  "Too many token refresh attempts — please try again after 15 minutes",
+);
+
+export const limitLogoutRequests = createLimiter(
+  30,
+  15 * MINUTE_MS,
+  "Too many logout attempts — please try again after 15 minutes",
+);
+
+export const limitRegisterRequests = createLimiter(
+  5,
+  60 * MINUTE_MS,
+  "Too many registration attempts — please try again after 1 hour",
+);
+
+export const limitVerifyEmailRequests = createLimiter(
+  5,
+  15 * MINUTE_MS,
+  "Too many email verification attempts — please try again after 15 minutes",
+);
+
+export const limitResendVerificationEmailRequests = createLimiter(
+  3,
+  15 * MINUTE_MS,
+  "Too many verification email requests — please try again after 15 minutes",
+);
+
+export const limitLoginRequests = createLimiter(
+  5,
+  15 * MINUTE_MS,
+  "Too many login attempts — please try again after 15 minutes",
+);
+
+export const limitForgotPasswordRequests = createLimiter(
+  3,
+  15 * MINUTE_MS,
+  "Too many password reset requests — please try again after 15 minutes",
+);
+
+export const limitResetPasswordRequests = createLimiter(
+  5,
+  15 * MINUTE_MS,
+  "Too many password reset attempts — please try again after 15 minutes",
+);
+
+export const limitChangePasswordRequests = createLimiter(
+  5,
+  15 * MINUTE_MS,
+  "Too many password change attempts — please try again after 15 minutes",
+);
