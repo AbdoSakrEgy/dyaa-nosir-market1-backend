@@ -124,18 +124,18 @@ export class AuthService {
     // step: verify refresh token
     const oldPayload = verifyRefreshToken(refreshToken);
 
-    // step: find valid stored token
-    const storedToken = await RefreshTokenModel.findOne({
-      token: refreshToken,
-      revokedAt: { $exists: false },
-      expiresAt: { $gt: new Date() },
-    });
+    // step: atomically claim and revoke the stored token
+    const revokedToken = await RefreshTokenModel.findOneAndUpdate(
+      {
+        token: refreshToken,
+        revokedAt: { $exists: false },
+        expiresAt: { $gt: new Date() },
+      },
+      { $set: { revokedAt: new Date() } },
+      { new: true },
+    );
 
-    if (!storedToken) throw new UnauthorizedError("Invalid refresh token");
-
-    // step: revoke old refresh token
-    storedToken.revokedAt = new Date();
-    await storedToken.save();
+    if (!revokedToken) throw new UnauthorizedError("Invalid refresh token");
 
     // step: create new auth session
     return createSession(oldPayload.userId, oldPayload.roleId);
