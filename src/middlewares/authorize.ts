@@ -2,17 +2,18 @@ import type { Request, Response, NextFunction } from "express";
 import { ForbiddenError } from "../shared/utils/error/app.error.js";
 import { AuthPayload } from "../shared/types/jwt.types.js";
 import { RoleModel } from "../DB/models/user/role.model.js";
+import type { UserRole } from "../shared/types/shared.types.js";
 /**
  * Role-based authorization middleware factory.
  *
  * Usage:
- *   router.delete("/users/:id", authenticate, authorize("admin", "superadmin"), handler);
+ *   router.delete("/products/:id", authenticate, authorize("admin"), handler);
  *
  * Design: Higher-order function (factory pattern) returns a middleware closure
  * that has access to the allowed roles via closure scope.
  * This is more flexible and composable than a single middleware with hardcoded roles.
  */
-export const authorize = (...allowedRoles: string[]) => {
+export const authorize = (...allowedRoles: UserRole[]) => {
   return async (
     req: Request,
     _res: Response,

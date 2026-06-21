@@ -63,13 +63,6 @@ const seedDatabase = async (): Promise<void> => {
     isSystem: true,
   });
 
-  const superAdminRole = await RoleModel.create({
-    name: "Super Admin",
-    slug: "superadmin",
-    permissions: ["*"],
-    isSystem: true,
-  });
-
   const password = await bcrypt.hash("Password123", 12);
 
   const admin = await UserModel.create({
@@ -78,15 +71,6 @@ const seedDatabase = async (): Promise<void> => {
     phone: "01000000001",
     password,
     roleId: adminRole._id,
-    isEmailConfirmed: true,
-  });
-
-  await UserModel.create({
-    name: "Super Admin",
-    email: "superadmin@example.com",
-    phone: "01000000002",
-    password,
-    roleId: superAdminRole._id,
     isEmailConfirmed: true,
   });
 

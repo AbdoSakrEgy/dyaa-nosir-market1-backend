@@ -4,6 +4,11 @@ import mongoose, {
   type InferSchemaType,
   type Model,
 } from "mongoose";
+import {
+  ProductCondition,
+  ProductStockStatus,
+  ProductType,
+} from "../../../shared/types/catalog.types.js";
 
 const localizedRequiredSchema = new Schema(
   {
@@ -57,6 +62,11 @@ const productSchema = new Schema(
       unique: true,
     },
     description: { type: localizedOptionalSchema },
+    type: {
+      type: String,
+      enum: Object.values(ProductType),
+      required: true,
+    },
     categoryId: {
       type: Schema.Types.ObjectId,
       ref: "Category",
@@ -64,7 +74,13 @@ const productSchema = new Schema(
     },
     brandId: { type: Schema.Types.ObjectId, ref: "Brand" },
     // SKU is the unique business/inventory code for this product, separate from MongoDB's _id.
-    sku: { type: String, required: true, trim: true, unique: true },
+    sku: {
+      type: String,
+      required: true,
+      trim: true,
+      uppercase: true,
+      unique: true,
+    },
     images: { type: [String], default: [] },
     price: { type: Number, required: true, min: 0 },
     discountPrice: { type: Number, min: 0 },
@@ -72,18 +88,13 @@ const productSchema = new Schema(
     stockQuantity: { type: Number, default: 0, min: 0 },
     stockStatus: {
       type: String,
-      enum: [
-        "in_stock",
-        "out_of_stock",
-        "preorder",
-        "contact_for_availability",
-      ],
-      default: "in_stock",
+      enum: Object.values(ProductStockStatus),
+      default: ProductStockStatus.outOfStock,
     },
     condition: {
       type: String,
-      enum: ["new", "used", "refurbished"],
-      default: "new",
+      enum: Object.values(ProductCondition),
+      default: ProductCondition.new,
     },
     warranty: { type: warrantySchema },
     specs: { type: [productSpecSchema], default: [] },
@@ -93,11 +104,12 @@ const productSchema = new Schema(
     },
     isFeatured: { type: Boolean, default: false },
     isPublished: { type: Boolean, default: false },
+    isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
 
-productSchema.index({ categoryId: 1, type: 1, isPublished: 1 });
+productSchema.index({ categoryId: 1, type: 1, isPublished: 1, isActive: 1 });
 productSchema.index({ brandId: 1, isPublished: 1 });
 productSchema.index({ stockStatus: 1, isPublished: 1 });
 productSchema.index({ price: 1 });

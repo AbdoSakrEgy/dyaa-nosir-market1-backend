@@ -39,6 +39,10 @@ Use ES modules and strict TypeScript. Keep imports compatible with `moduleResolu
 
 Use clear service/controller separation: controllers handle HTTP concerns, services contain business logic, and routes wire middleware to controllers.
 
+Name every API route after the controller/service method it invokes, converting the method name from camelCase to kebab-case. For example, `profileController.getMe.bind(profileController)` must use `/get-me`, not `/me`, and `profileController.getAll.bind(profileController)` must use `/get-all`. Keep the controller and service operation names aligned.
+
+Route paths must remain distinct and descriptive even when different HTTP methods would technically allow the same path. If two operations would otherwise share a path such as `/product` (for example, one `POST` and one `PATCH`), give the operations suitable distinct method names and matching paths, such as `/list-products`, `/product-details`, `/create-product`, or `/update-product`.
+
 Keep `src/modules/**` service classes focused on API-facing service operations. Any helper function used by a module `*.service.ts` file that is not itself an API service method must live in that module's `utils/` folder, for example `src/modules/auth/utils/create-session.ts`, `normalize-phone.ts`, and `verify-google-token.ts`. This rule applies to `src/modules/**`, not shared integration utilities outside the modules folder.
 
 In every `*.controller.ts` class, add a method-name banner comment directly above each method:
@@ -83,3 +87,5 @@ Pull requests should include a short summary, affected routes/modules, required 
 ## Security & Configuration Tips
 
 Keep secrets in `.env` and do not commit local credentials. Review integrations in `src/shared/utils/` before changing payment, email, storage, or token behavior, and document any new environment variables in the README.
+
+The application supports exactly two roles: `customer` and `admin`. Protect every admin-only API with `authorize("admin")`, and do not introduce any additional roles.

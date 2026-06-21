@@ -39,9 +39,9 @@ export class AuthService {
 
     // step: protect unique google id, email, and phone ownership
     const [userByGoogleId, userByEmail, userByPhone] = await Promise.all([
-      UserModel.findOne({ googleId: googleUser.googleId, isActive: true }),
-      UserModel.findOne({ email: googleUser.email, isActive: true }),
-      UserModel.findOne({ phone: normalizedPhone, isActive: true }),
+      UserModel.findOne({ googleId: googleUser.googleId }),
+      UserModel.findOne({ email: googleUser.email }),
+      UserModel.findOne({ phone: normalizedPhone }),
     ]);
 
     if (userByGoogleId) {
@@ -177,9 +177,17 @@ export class AuthService {
 
   // ============================ register ============================
   async register(data: RegisterDTO): Promise<RegisterResponse> {
-    // step: check existing user
-    const existingUser = await UserModel.findOne({ email: data.email });
-    if (existingUser) throw new ConflictError("Email already registered");
+    // step: normalize and protect unique email and phone ownership
+    const normalizedPhone = normalizePhone(data.phone);
+    const [userByEmail, userByPhone] = await Promise.all([
+      UserModel.findOne({ email: data.email }),
+      UserModel.findOne({ phone: normalizedPhone }),
+    ]);
+
+    if (userByEmail) throw new ConflictError("Email already registered");
+    if (userByPhone) {
+      throw new ConflictError("This phone number is already used");
+    }
 
     // step: check customer role
     const customerRole = await RoleModel.findOne({
@@ -195,6 +203,7 @@ export class AuthService {
     // step: create user
     const user = await UserModel.create({
       ...data,
+      phone: normalizedPhone,
       password: await hashData(data.password),
       authProvider: AuthProvider.local,
       roleId: customerRole._id,

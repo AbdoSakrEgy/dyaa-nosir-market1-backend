@@ -1,5 +1,4 @@
 import rateLimit from "express-rate-limit";
-import { env } from "../config/env.js";
 import { HttpStatusCode } from "../shared/utils/response/http.status.code.js";
 
 /**
@@ -96,4 +95,11 @@ export const limitChangePasswordRequests = createLimiter(
   5,
   15 * MINUTE_MS,
   "Too many password change attempts — please try again after 15 minutes",
+);
+
+// ============================ inquiry ============================
+export const limitCreateInquiryRequests = createLimiter(
+  10,
+  60 * MINUTE_MS,
+  "Too many inquiry submissions — please try again after 1 hour",
 );

@@ -16,8 +16,8 @@ export const responseHandler = <T>(
   const body: ApiResponse<T> = {
     success: statusCode >= 200 && statusCode < 300,
     message,
-    ...(data !== undefined && { data }),
     ...(meta !== undefined && { meta }),
+    ...(data !== undefined && { data }),
   };
 
   res.status(statusCode).json(body);

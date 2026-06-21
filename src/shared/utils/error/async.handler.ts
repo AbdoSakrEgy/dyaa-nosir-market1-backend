@@ -7,7 +7,7 @@ import type { Request, Response, NextFunction } from "express";
  * This eliminates that boilerplate entirely.
  *
  * Usage:
- *   router.get("/users", asyncHandler(async (req, res) => { ... }));
+ *   router.get("/products", asyncHandler(async (req, res) => { ... }));
  */
 export const asyncHandler = (
   fn: (req: Request, res: Response, next: NextFunction) => Promise<void>,

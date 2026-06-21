@@ -15,8 +15,8 @@ import { HttpStatusCode } from "../shared/utils/response/http.status.code.js";
  * - Zero dependencies
  *
  * Usage:
- *   router.post("/users", validate({ body: createUserSchema }), handler);
- *   router.get("/users/:id", validate({ params: idParamSchema }), handler);
+ *   router.post("/products", validate({ body: createProductSchema }), handler);
+ *   router.get("/products/:id", validate({ params: productIdParamSchema }), handler);
  */
 interface ValidationSchemas {
   body?: ZodSchema;
@@ -51,6 +51,10 @@ export const validate = (schemas: ValidationSchemas) => {
             message: issue.message,
           });
         }
+      } else if (name === "body") {
+        req.body = result.data;
+      } else if (name === "params") {
+        req.params = result.data as Record<string, string>;
       }
     }
 

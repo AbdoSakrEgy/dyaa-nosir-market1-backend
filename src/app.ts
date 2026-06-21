@@ -12,7 +12,11 @@ import { handleRouteNotFound } from "./middlewares/handle.route.not.found.js";
 // Routes
 import healthRoutes from "./modules/health/health.route.js";
 import authRoutes from "./modules/auth/auth.route.js";
-import userRoutes from "./modules/user/user.route.js";
+import profileRoutes from "./modules/profile/profile.route.js";
+import categoryRoutes from "./modules/category/category.route.js";
+import brandRoutes from "./modules/brand/brand.route.js";
+import productRoutes from "./modules/product/product.route.js";
+import inquiryRoutes from "./modules/inquiry/inquiry.route.js";
 
 /**
  * Express application setup.
@@ -50,7 +54,11 @@ app.use(logRequests);
 const API_PREFIX = "/api/v1";
 app.use(`${API_PREFIX}/health`, healthRoutes);
 app.use(`${API_PREFIX}/auth`, authRoutes);
-app.use(`${API_PREFIX}/users`, userRoutes);
+app.use(`${API_PREFIX}/profiles`, profileRoutes);
+app.use(`${API_PREFIX}/categories`, categoryRoutes);
+app.use(`${API_PREFIX}/brands`, brandRoutes);
+app.use(`${API_PREFIX}/products`, productRoutes);
+app.use(`${API_PREFIX}/inquiries`, inquiryRoutes);
 
 app.use(handleRouteNotFound);
 app.use(handleGlobalError);
