@@ -1,6 +1,6 @@
 export enum StoreInEnum {
-  DISK = "disk",
-  MEMORY = "memory",
+  disk = "disk",
+  memory = "memory",
 }
 
 export const FileType = {

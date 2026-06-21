@@ -8,11 +8,8 @@ export const updateProfileSchema = z
     age: z.number().int().min(18).max(200).optional(),
     gender: z.enum(Object.values(Gender)).optional(),
     phone: z.string().min(8).max(20).trim().optional(),
-    profileImage: z.url("Profile image must be a valid URL").optional(),
   })
-  .refine((data) => Object.values(data).some((value) => value !== undefined), {
-    message: "At least one profile field is required",
-  });
+  .strict();
 
 // ============================ profileIdParamSchema ============================
 export const profileIdParamSchema = z.object({

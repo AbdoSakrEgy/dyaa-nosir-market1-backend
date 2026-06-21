@@ -21,7 +21,6 @@ export function buildProductQuery(
 
   if (query.categoryId) filter.categoryId = query.categoryId;
   if (query.brandId) filter.brandId = query.brandId;
-  if (query.type) filter.type = query.type;
   if (query.stockStatus) filter.stockStatus = query.stockStatus;
   if (query.condition) filter.condition = query.condition;
   if (query.isFeatured) filter.isFeatured = query.isFeatured === "true";

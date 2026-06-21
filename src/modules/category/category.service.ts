@@ -2,9 +2,15 @@ import mongoose from "mongoose";
 import { CategoryModel } from "../../DB/models/product/category.model.js";
 import { ProductModel } from "../../DB/models/product/product.model.js";
 import {
+  BadRequestError,
   ConflictError,
   NotFoundError,
 } from "../../shared/utils/error/app.error.js";
+import {
+  destroySingleFile,
+  extractPublicIdFromUrl,
+  uploadSingleBuffer,
+} from "../../shared/utils/cloudinary/cloudinary.service.js";
 import type {
   CreateCategoryDTO,
   ListCategoriesQueryDTO,
@@ -67,7 +73,7 @@ export class CategoryService {
   }
 
   // ============================ create ============================
-  async create(data: CreateCategoryDTO) {
+  async create(data: CreateCategoryDTO, imageFile?: Express.Multer.File) {
     // step: normalize localized slugs
     data.slug = {
       ar: data.slug.ar.toLowerCase(),
@@ -86,12 +92,42 @@ export class CategoryService {
     // step: validate parent category
     if (data.parentId) await validateCategoryParent(data.parentId);
 
-    // step: create category
-    return CategoryModel.create(data);
+    // step: upload the supplied image
+    const categoryData: Record<string, unknown> = { ...data };
+    let uploadedPublicId: string | undefined;
+    if (imageFile) {
+      const uploadedImage = await uploadSingleBuffer({
+        fileBuffer: imageFile.buffer,
+        storagePathOnCloudinary: "categories",
+      });
+      categoryData["image"] = uploadedImage.secure_url;
+      uploadedPublicId = uploadedImage.public_id;
+    }
+
+    // step: create category and roll back a new upload on failure
+    try {
+      return await CategoryModel.create(categoryData);
+    } catch (error) {
+      if (uploadedPublicId) {
+        await destroySingleFile({ public_id: uploadedPublicId }).catch(
+          () => undefined,
+        );
+      }
+      throw error;
+    }
   }
 
   // ============================ update ============================
-  async update(id: string, data: UpdateCategoryDTO) {
+  async update(
+    id: string,
+    data: UpdateCategoryDTO,
+    imageFile?: Express.Multer.File,
+  ) {
+    // step: require a body field or uploaded image
+    if (Object.keys(data).length === 0 && !imageFile) {
+      throw new BadRequestError("At least one category field is required");
+    }
+
     // step: confirm category exists
     const existing = await CategoryModel.findById(id).lean();
     if (!existing) throw new NotFoundError("Category");
@@ -119,26 +155,64 @@ export class CategoryService {
     // step: validate parent category
     if (data.parentId) await validateCategoryParent(data.parentId, id);
 
+    // step: upload the supplied image
+    let uploadedPublicId: string | undefined;
+    let uploadedImageUrl: string | undefined;
+    if (imageFile) {
+      const uploadedImage = await uploadSingleBuffer({
+        fileBuffer: imageFile.buffer,
+        storagePathOnCloudinary: "categories",
+      });
+      uploadedPublicId = uploadedImage.public_id;
+      uploadedImageUrl = uploadedImage.secure_url;
+    }
+
     // step: apply category changes
     const update: Record<string, unknown> = { ...data };
     if (data.parentId === null) {
       delete update["parentId"];
     }
-    if (data.image === null) {
-      delete update["image"];
+    if (uploadedImageUrl) update["image"] = uploadedImageUrl;
+
+    let category;
+    try {
+      category = await CategoryModel.findByIdAndUpdate(
+        id,
+        {
+          $set: update,
+          ...(data.parentId === null && { $unset: { parentId: 1 } }),
+        },
+        { new: true, runValidators: true },
+      );
+    } catch (error) {
+      if (uploadedPublicId) {
+        await destroySingleFile({ public_id: uploadedPublicId }).catch(
+          () => undefined,
+        );
+      }
+      throw error;
     }
 
-    const category = await CategoryModel.findByIdAndUpdate(
-      id,
-      {
-        $set: update,
-        ...(data.parentId === null && { $unset: { parentId: 1 } }),
-        ...(data.image === null && { $unset: { image: 1 } }),
-      },
-      { new: true, runValidators: true },
-    );
+    if (!category) {
+      if (uploadedPublicId) {
+        await destroySingleFile({ public_id: uploadedPublicId }).catch(
+          () => undefined,
+        );
+      }
+      throw new NotFoundError("Category");
+    }
 
-    if (!category) throw new NotFoundError("Category");
+    // step: remove the replaced Cloudinary image
+    if (uploadedImageUrl && existing.image !== uploadedImageUrl) {
+      const oldPublicId = existing.image
+        ? extractPublicIdFromUrl(existing.image)
+        : null;
+      if (oldPublicId) {
+        await destroySingleFile({ public_id: oldPublicId }).catch(
+          () => undefined,
+        );
+      }
+    }
 
     // step: result
     return category;

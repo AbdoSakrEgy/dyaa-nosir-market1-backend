@@ -24,9 +24,8 @@ export const createCategorySchema = z.object({
   slug: localizedCategorySlugSchema,
   description: localizedCategoryDescriptionSchema.optional(),
   parentId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
-  image: z.url("Category image must be a valid URL").optional(),
   isActive: z.boolean().optional(),
-});
+}).strict();
 
 // ============================ updateCategorySchema ============================
 export const updateCategorySchema = z
@@ -35,12 +34,9 @@ export const updateCategorySchema = z
     slug: localizedCategorySlugSchema.optional(),
     description: localizedCategoryDescriptionSchema.optional(),
     parentId: z.string().regex(/^[0-9a-fA-F]{24}$/).nullable().optional(),
-    image: z.url("Category image must be a valid URL").nullable().optional(),
     isActive: z.boolean().optional(),
   })
-  .refine((data) => Object.values(data).some((value) => value !== undefined), {
-    message: "At least one category field is required",
-  });
+  .strict();
 
 // ============================ categoryIdentifierParamSchema ============================
 export const categoryIdentifierParamSchema = z.object({

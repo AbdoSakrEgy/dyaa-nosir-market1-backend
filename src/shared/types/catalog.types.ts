@@ -1,15 +1,3 @@
-export enum BrandType {
-  tractor = "tractor",
-  car = "car",
-  universal = "universal",
-}
-
-export enum ProductType {
-  tractor = "tractor",
-  tractorPart = "tractor_part",
-  carPart = "car_part",
-}
-
 export enum ProductStockStatus {
   inStock = "in_stock",
   outOfStock = "out_of_stock",

@@ -46,7 +46,10 @@ export class CategoryController {
 
   // ---------------------------- create ----------------------------
   async create(req: Request, res: Response): Promise<void> {
-    const category = await categoryService.create(req.body as CreateCategoryDTO);
+    const category = await categoryService.create(
+      req.body as CreateCategoryDTO,
+      req.file,
+    );
     responseHandler(res, HttpStatusCode.CREATED, "Category created successfully", category);
   }
 
@@ -55,6 +58,7 @@ export class CategoryController {
     const category = await categoryService.update(
       req.params["id"] as string,
       req.body as UpdateCategoryDTO,
+      req.file,
     );
     responseHandler(res, HttpStatusCode.OK, "Category updated successfully", category);
   }

@@ -47,6 +47,8 @@ Keep `src/modules/**` service classes focused on API-facing service operations. 
 
 For every API service method that retrieves a collection using pagination, limits, filters, sorting, search, or similar query options, write the query-building logic directly inside that service method (for example, `async listProfiles(query: ListProfilesQueryDTO)`). Do not extract this logic into a separate helper function or a file in the module's `utils/` folder.
 
+Keep pagination and filtering consistent with `ProfileService.listProfiles`: start a `// step: build allow-listed filters` block by calculating `page` and `limit`, create a typed Mongoose `FilterQuery<ModelType>`, and then apply only validated query fields. Next, retrieve the records and `totalItems` together with `Promise.all`, applying sorting, `skip`, `limit`, and `lean` directly to the query. Return the collection plus `meta` containing `totalItems`, `itemCount`, `itemsPerPage`, `totalPages`, and `currentPage`. Follow this structure for all new collection APIs.
+
 In every `*.controller.ts` class, add a method-name banner comment directly above each method:
 
 ```ts

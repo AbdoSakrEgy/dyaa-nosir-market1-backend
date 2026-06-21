@@ -4,6 +4,12 @@ import { authenticate } from "../../middlewares/authenticate.js";
 import { authorize } from "../../middlewares/authorize.js";
 import { asyncHandler } from "../../shared/utils/error/async.handler.js";
 import { validate } from "../../middlewares/validate.js";
+import { multerUpload } from "../../middlewares/multer.upload.js";
+import { parseMultipartJson } from "../../middlewares/parse.multipart.json.js";
+import {
+  FileType,
+  StoreInEnum,
+} from "../../shared/types/multer.upload.types.js";
 import {
   listProfilesQuerySchema,
   profileIdParamSchema,
@@ -22,6 +28,11 @@ router.get(
 router.patch(
   "/update-profile",
   authenticate,
+  multerUpload({
+    sendedFileType: FileType.image,
+    storeIn: StoreInEnum.memory,
+  }).single("profileImage"),
+  parseMultipartJson,
   validate({ body: updateProfileSchema }),
   asyncHandler(profileController.updateProfile.bind(profileController)),
 );

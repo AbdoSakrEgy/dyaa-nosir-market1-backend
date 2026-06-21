@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { BrandType } from "../../shared/types/catalog.types.js";
 
 // ============================ localizedBrandNameSchema ============================
 const localizedBrandNameSchema = z.object({
@@ -17,25 +16,19 @@ const localizedBrandDescriptionSchema = z.object({
 export const createBrandSchema = z.object({
   name: localizedBrandNameSchema,
   slug: z.string().min(1).max(120).trim().toLowerCase(),
-  type: z.enum(Object.values(BrandType)).optional(),
-  logo: z.url("Brand logo must be a valid URL").optional(),
   description: localizedBrandDescriptionSchema.optional(),
   isActive: z.boolean().optional(),
-});
+}).strict();
 
 // ============================ updateBrandSchema ============================
 export const updateBrandSchema = z
   .object({
     name: localizedBrandNameSchema.optional(),
     slug: z.string().min(1).max(120).trim().toLowerCase().optional(),
-    type: z.enum(Object.values(BrandType)).optional(),
-    logo: z.url("Brand logo must be a valid URL").nullable().optional(),
     description: localizedBrandDescriptionSchema.optional(),
     isActive: z.boolean().optional(),
   })
-  .refine((data) => Object.values(data).some((value) => value !== undefined), {
-    message: "At least one brand field is required",
-  });
+  .strict();
 
 // ============================ brandIdentifierParamSchema ============================
 export const brandIdentifierParamSchema = z.object({
@@ -49,10 +42,22 @@ export const brandIdParamSchema = z.object({
 
 // ============================ listBrandsQuerySchema ============================
 export const listBrandsQuerySchema = z.object({
-  type: z.enum(Object.values(BrandType)).optional(),
+  page: z.string().regex(/^\d+$/).optional(),
+  limit: z.string().regex(/^\d+$/).optional(),
+  search: z.string().trim().max(100).optional(),
+});
+
+// ============================ listBrandsManagementQuerySchema ============================
+export const listBrandsManagementQuerySchema = z.object({
+  page: z.string().regex(/^\d+$/).optional(),
+  limit: z.string().regex(/^\d+$/).optional(),
+  search: z.string().trim().max(100).optional(),
   isActive: z.enum(["true", "false"]).optional(),
 });
 
 export type CreateBrandDTO = z.infer<typeof createBrandSchema>;
 export type UpdateBrandDTO = z.infer<typeof updateBrandSchema>;
 export type ListBrandsQueryDTO = z.infer<typeof listBrandsQuerySchema>;
+export type ListBrandsManagementQueryDTO = z.infer<
+  typeof listBrandsManagementQuerySchema
+>;

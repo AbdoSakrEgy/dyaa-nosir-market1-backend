@@ -4,7 +4,6 @@ import mongoose, {
   type InferSchemaType,
   type Model,
 } from "mongoose";
-import { BrandType } from "../../../shared/types/catalog.types.js";
 
 const localizedRequiredSchema = new Schema(
   {
@@ -34,17 +33,12 @@ const brandSchema = new Schema(
     },
     logo: { type: String, trim: true },
     description: { type: localizedOptionalSchema },
-    type: {
-      type: String,
-      enum: Object.values(BrandType),
-      default: BrandType.universal,
-    },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
 
-brandSchema.index({ type: 1, isActive: 1 });
+brandSchema.index({ isActive: 1 });
 
 export type Brand = InferSchemaType<typeof brandSchema>;
 

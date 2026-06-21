@@ -4,6 +4,12 @@ import { authenticate } from "../../middlewares/authenticate.js";
 import { authorize } from "../../middlewares/authorize.js";
 import { validate } from "../../middlewares/validate.js";
 import { asyncHandler } from "../../shared/utils/error/async.handler.js";
+import { multerUpload } from "../../middlewares/multer.upload.js";
+import { parseMultipartJson } from "../../middlewares/parse.multipart.json.js";
+import {
+  FileType,
+  StoreInEnum,
+} from "../../shared/types/multer.upload.types.js";
 import {
   createProductSchema,
   listProductsQuerySchema,
@@ -24,14 +30,17 @@ router.get(
   authenticate,
   authorize("admin"),
   validate({ query: listProductsQuerySchema }),
-  asyncHandler(
-    productController.getAllForManagement.bind(productController),
-  ),
+  asyncHandler(productController.getAllForManagement.bind(productController)),
 );
 router.post(
   "/create",
   authenticate,
   authorize("admin"),
+  multerUpload({
+    sendedFileType: FileType.image,
+    storeIn: StoreInEnum.memory,
+  }).array("images", 20),
+  parseMultipartJson,
   validate({ body: createProductSchema }),
   asyncHandler(productController.create.bind(productController)),
 );
@@ -39,6 +48,11 @@ router.patch(
   "/update/:id",
   authenticate,
   authorize("admin"),
+  multerUpload({
+    sendedFileType: FileType.image,
+    storeIn: StoreInEnum.memory,
+  }).array("images", 20),
+  parseMultipartJson,
   validate({ params: productIdParamSchema, body: updateProductSchema }),
   asyncHandler(productController.update.bind(productController)),
 );

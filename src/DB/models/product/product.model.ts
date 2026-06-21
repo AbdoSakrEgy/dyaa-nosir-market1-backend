@@ -7,7 +7,6 @@ import mongoose, {
 import {
   ProductCondition,
   ProductStockStatus,
-  ProductType,
 } from "../../../shared/types/catalog.types.js";
 
 const localizedRequiredSchema = new Schema(
@@ -62,11 +61,6 @@ const productSchema = new Schema(
       unique: true,
     },
     description: { type: localizedOptionalSchema },
-    type: {
-      type: String,
-      enum: Object.values(ProductType),
-      required: true,
-    },
     categoryId: {
       type: Schema.Types.ObjectId,
       ref: "Category",
@@ -109,7 +103,7 @@ const productSchema = new Schema(
   { timestamps: true },
 );
 
-productSchema.index({ categoryId: 1, type: 1, isPublished: 1, isActive: 1 });
+productSchema.index({ categoryId: 1, isPublished: 1, isActive: 1 });
 productSchema.index({ brandId: 1, isPublished: 1 });
 productSchema.index({ stockStatus: 1, isPublished: 1 });
 productSchema.index({ price: 1 });

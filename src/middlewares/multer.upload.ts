@@ -1,8 +1,8 @@
 import multer from "multer";
-import { env } from "../config/env.js";
 import { Request } from "express";
 import fs from "fs";
-import { BadRequestError } from "../shared/utils/error/app.error.js";
+import { AppError } from "../shared/utils/error/app.error.js";
+import { HttpStatusCode } from "../shared/utils/response/http.status.code.js";
 import {
   FileType,
   MulterUploadOptions,
@@ -12,10 +12,10 @@ import {
 export const multerUpload = ({
   sendedFileDest = "general",
   sendedFileType = FileType.image,
-  storeIn = StoreInEnum.DISK,
+  storeIn = StoreInEnum.memory,
 }: MulterUploadOptions): multer.Multer => {
   const storage =
-    storeIn == StoreInEnum.MEMORY
+    storeIn == StoreInEnum.memory
       ? multer.memoryStorage()
       : multer.diskStorage({
           // destination: (req: any, file, cb) => {
@@ -36,12 +36,18 @@ export const multerUpload = ({
     cb: CallableFunction,
   ) => {
     if (
-      file.size > env.MULTER_MAX_FILE_SIZE_MB * 1024 * 1024 &&
-      storeIn == StoreInEnum.MEMORY
+      file.size > 200 * 1024 * 1024 &&
+      storeIn == StoreInEnum.memory
     ) {
-      return cb(new BadRequestError(), false);
+      return cb(
+        new AppError("Use disk not memory", HttpStatusCode.BAD_REQUEST),
+        false,
+      );
     } else if (!sendedFileType.includes(file.mimetype)) {
-      return cb(new BadRequestError(), false);
+      return cb(
+        new AppError("Invalid file format", HttpStatusCode.BAD_REQUEST),
+        false,
+      );
     }
     cb(null, true);
   };

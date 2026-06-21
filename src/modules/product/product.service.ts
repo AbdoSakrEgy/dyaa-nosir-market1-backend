@@ -2,9 +2,15 @@ import mongoose from "mongoose";
 import { ProductModel } from "../../DB/models/product/product.model.js";
 import { ProductStockStatus } from "../../shared/types/catalog.types.js";
 import {
+  BadRequestError,
   ConflictError,
   NotFoundError,
 } from "../../shared/utils/error/app.error.js";
+import {
+  destroyManyFiles,
+  extractPublicIdFromUrl,
+  uploadManyBuffers,
+} from "../../shared/utils/cloudinary/cloudinary.service.js";
 import type {
   CreateProductDTO,
   ListProductsQueryDTO,
@@ -27,7 +33,7 @@ export class ProductService {
     const [products, totalItems] = await Promise.all([
       ProductModel.find(filter)
         .populate("categoryId", "name slug")
-        .populate("brandId", "name slug type")
+        .populate("brandId", "name slug")
         .sort(sort)
         .skip((page - 1) * limit)
         .limit(limit)
@@ -66,7 +72,7 @@ export class ProductService {
       isActive: true,
     })
       .populate("categoryId", "name slug")
-      .populate("brandId", "name slug type")
+      .populate("brandId", "name slug")
       .lean();
 
     if (!product) throw new NotFoundError("Product");
@@ -76,7 +82,7 @@ export class ProductService {
   }
 
   // ============================ create ============================
-  async create(data: CreateProductDTO) {
+  async create(data: CreateProductDTO, imageFiles?: Express.Multer.File[]) {
     // step: protect slug and SKU uniqueness
     const [slugOwner, skuOwner] = await Promise.all([
       ProductModel.exists({ slug: data.slug }),
@@ -101,15 +107,45 @@ export class ProductService {
       stockStatus,
     });
 
-    // step: create product
-    return ProductModel.create({
-      ...data,
-      stockStatus,
-    });
+    // step: upload the supplied product images
+    const productData: Record<string, unknown> = { ...data };
+    let uploadedPublicIds: string[] = [];
+    if (imageFiles?.length) {
+      const uploadedImages = await uploadManyBuffers({
+        fileBufferArr: imageFiles.map((file) => file.buffer),
+        storagePathOnCloudinary: "products",
+      });
+      productData["images"] = uploadedImages.map((image) => image.secure_url);
+      uploadedPublicIds = uploadedImages.map((image) => image.public_id);
+    }
+
+    // step: create product and roll back new uploads on failure
+    try {
+      return await ProductModel.create({
+        ...productData,
+        stockStatus,
+      });
+    } catch (error) {
+      if (uploadedPublicIds.length) {
+        await destroyManyFiles({ public_ids: uploadedPublicIds }).catch(
+          () => undefined,
+        );
+      }
+      throw error;
+    }
   }
 
   // ============================ update ============================
-  async update(id: string, data: UpdateProductDTO) {
+  async update(
+    id: string,
+    data: UpdateProductDTO,
+    imageFiles?: Express.Multer.File[],
+  ) {
+    // step: require a body field or uploaded images
+    if (Object.keys(data).length === 0 && !imageFiles?.length) {
+      throw new BadRequestError("At least one product field is required");
+    }
+
     // step: retrieve existing product
     const existing = await ProductModel.findById(id).lean();
     if (!existing) throw new NotFoundError("Product");
@@ -140,11 +176,24 @@ export class ProductService {
       stockStatus: data.stockStatus ?? existing.stockStatus,
     });
 
+    // step: upload the supplied product images
+    let uploadedPublicIds: string[] = [];
+    let uploadedImageUrls: string[] | undefined;
+    if (imageFiles?.length) {
+      const uploadedImages = await uploadManyBuffers({
+        fileBufferArr: imageFiles.map((file) => file.buffer),
+        storagePathOnCloudinary: "products",
+      });
+      uploadedImageUrls = uploadedImages.map((image) => image.secure_url);
+      uploadedPublicIds = uploadedImages.map((image) => image.public_id);
+    }
+
     // step: prepare nullable fields
     const update: Record<string, unknown> = { ...data };
     if (data.brandId === null) delete update["brandId"];
     if (data.discountPrice === null) delete update["discountPrice"];
     if (data.warranty === null) delete update["warranty"];
+    if (uploadedImageUrls) update["images"] = uploadedImageUrls;
 
     // step: apply product changes
     const unset = {
@@ -152,16 +201,45 @@ export class ProductService {
       ...(data.discountPrice === null && { discountPrice: 1 }),
       ...(data.warranty === null && { warranty: 1 }),
     };
-    const product = await ProductModel.findByIdAndUpdate(
-      id,
-      {
-        $set: update,
-        ...(Object.keys(unset).length > 0 && { $unset: unset }),
-      },
-      { new: true, runValidators: true },
-    );
+    let product;
+    try {
+      product = await ProductModel.findByIdAndUpdate(
+        id,
+        {
+          $set: update,
+          ...(Object.keys(unset).length > 0 && { $unset: unset }),
+        },
+        { new: true, runValidators: true },
+      );
+    } catch (error) {
+      if (uploadedPublicIds.length) {
+        await destroyManyFiles({ public_ids: uploadedPublicIds }).catch(
+          () => undefined,
+        );
+      }
+      throw error;
+    }
 
-    if (!product) throw new NotFoundError("Product");
+    if (!product) {
+      if (uploadedPublicIds.length) {
+        await destroyManyFiles({ public_ids: uploadedPublicIds }).catch(
+          () => undefined,
+        );
+      }
+      throw new NotFoundError("Product");
+    }
+
+    // step: remove replaced Cloudinary images
+    if (uploadedImageUrls) {
+      const oldPublicIds = existing.images
+        .map((image) => extractPublicIdFromUrl(image))
+        .filter((publicId): publicId is string => publicId !== null);
+      if (oldPublicIds.length) {
+        await destroyManyFiles({ public_ids: oldPublicIds }).catch(
+          () => undefined,
+        );
+      }
+    }
 
     // step: result
     return product;

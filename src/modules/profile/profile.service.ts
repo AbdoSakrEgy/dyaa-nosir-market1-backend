@@ -6,6 +6,11 @@ import {
   ConflictError,
   NotFoundError,
 } from "../../shared/utils/error/app.error.js";
+import {
+  destroySingleFile,
+  extractPublicIdFromUrl,
+  uploadSingleBuffer,
+} from "../../shared/utils/cloudinary/cloudinary.service.js";
 import type {
   ListProfilesQueryDTO,
   UpdateProfileDTO,
@@ -31,7 +36,23 @@ export class ProfileService {
   }
 
   // ============================ updateProfile ============================
-  async updateProfile(userId: string, data: UpdateProfileDTO) {
+  async updateProfile(
+    userId: string,
+    data: UpdateProfileDTO,
+    profileImageFile?: Express.Multer.File,
+  ) {
+    // step: require a body field or uploaded profile image
+    if (Object.keys(data).length === 0 && !profileImageFile) {
+      throw new BadRequestError("At least one profile field is required");
+    }
+
+    // step: retrieve the current active profile
+    const existing = await UserModel.findOne({
+      _id: userId,
+      isActive: true,
+    }).lean();
+    if (!existing) throw new NotFoundError("Profile");
+
     // step: protect phone ownership
     if (data.phone) {
       const normalizedPhone = normalizeProfilePhone(data.phone);
@@ -44,17 +65,65 @@ export class ProfileService {
       data.phone = normalizedPhone;
     }
 
-    // step: update the active profile
-    const profile = await UserModel.findOneAndUpdate(
-      { _id: userId, isActive: true },
-      { $set: data },
-      { new: true, runValidators: true },
-    )
-      .select(PROFILE_FIELDS)
-      .populate("roleId", "name slug")
-      .lean();
+    // step: upload the supplied profile image
+    let uploadedPublicId: string | undefined;
+    let uploadedProfileImageUrl: string | undefined;
+    if (profileImageFile) {
+      const uploadedImage = await uploadSingleBuffer({
+        fileBuffer: profileImageFile.buffer,
+        storagePathOnCloudinary: "profiles",
+      });
+      uploadedPublicId = uploadedImage.public_id;
+      uploadedProfileImageUrl = uploadedImage.secure_url;
+    }
 
-    if (!profile) throw new NotFoundError("Profile");
+    // step: update the active profile
+    const update: Record<string, unknown> = { ...data };
+    if (uploadedProfileImageUrl) {
+      update["profileImage"] = uploadedProfileImageUrl;
+    }
+    let profile;
+    try {
+      profile = await UserModel.findOneAndUpdate(
+        { _id: userId, isActive: true },
+        { $set: update },
+        { new: true, runValidators: true },
+      )
+        .select(PROFILE_FIELDS)
+        .populate("roleId", "name slug")
+        .lean();
+    } catch (error) {
+      if (uploadedPublicId) {
+        await destroySingleFile({ public_id: uploadedPublicId }).catch(
+          () => undefined,
+        );
+      }
+      throw error;
+    }
+
+    if (!profile) {
+      if (uploadedPublicId) {
+        await destroySingleFile({ public_id: uploadedPublicId }).catch(
+          () => undefined,
+        );
+      }
+      throw new NotFoundError("Profile");
+    }
+
+    // step: remove the replaced Cloudinary profile image
+    if (
+      uploadedProfileImageUrl &&
+      existing.profileImage !== uploadedProfileImageUrl
+    ) {
+      const oldPublicId = existing.profileImage
+        ? extractPublicIdFromUrl(existing.profileImage)
+        : null;
+      if (oldPublicId) {
+        await destroySingleFile({ public_id: oldPublicId }).catch(
+          () => undefined,
+        );
+      }
+    }
 
     // step: result
     return profile;

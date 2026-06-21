@@ -47,7 +47,7 @@ export const env = {
 
   // ======================== multer.upload.ts ========================
   MULTER_MAX_FILE_SIZE_MB: parseInt(
-    process.env["MAX_FILE_SIZE_MB"] ?? "200",
+    process.env["MAX_FILE_SIZE_MB"] ?? "10",
     10,
   ),
 
@@ -86,8 +86,7 @@ export const env = {
 
   // Redis
   REDIS_URL: process.env["REDIS_URL"] ?? "",
-  
+
   // ======================== verify-google-token.ts ========================
   GOOGLE_WEB_CLIENT_ID: process.env["GOOGLE_WEB_CLIENT_ID"] ?? "",
-
 } as const;

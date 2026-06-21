@@ -1,36 +1,106 @@
-import mongoose from "mongoose";
-import { BrandModel } from "../../DB/models/product/brand.model.js";
+import mongoose, { type FilterQuery } from "mongoose";
+import {
+  BrandModel,
+  type Brand,
+} from "../../DB/models/product/brand.model.js";
 import { ProductModel } from "../../DB/models/product/product.model.js";
 import {
+  BadRequestError,
   ConflictError,
   NotFoundError,
 } from "../../shared/utils/error/app.error.js";
+import {
+  destroySingleFile,
+  extractPublicIdFromUrl,
+  uploadSingleBuffer,
+} from "../../shared/utils/cloudinary/cloudinary.service.js";
 import type {
   CreateBrandDTO,
+  ListBrandsManagementQueryDTO,
   ListBrandsQueryDTO,
   UpdateBrandDTO,
 } from "./brand.validators.js";
 
 export class BrandService {
   // ============================ getAll ============================
-  async getAll(query: ListBrandsQueryDTO, includeInactive = false) {
-    // step: build public brand filter
-    const filter: Record<string, unknown> = includeInactive
-      ? {}
-      : { isActive: true };
-    if (includeInactive && query.isActive) {
-      filter["isActive"] = query.isActive === "true";
-    }
-    if (query.type) filter["type"] = query.type;
+  async getAll(query: ListBrandsQueryDTO) {
+    // step: build allow-listed filters
+    const page = Math.max(Number(query.page ?? 1), 1);
+    const limit = Math.min(Math.max(Number(query.limit ?? 20), 1), 100);
+    const filter: FilterQuery<Brand> = { isActive: true };
 
-    // step: retrieve brands
-    return BrandModel.find(filter).sort({ "name.en": 1 }).lean();
+    if (query.search) {
+      const keyword = query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { "name.ar": { $regex: keyword, $options: "i" } },
+        { "name.en": { $regex: keyword, $options: "i" } },
+        { slug: { $regex: keyword, $options: "i" } },
+      ];
+    }
+
+    // step: retrieve brands and count
+    const [brands, totalItems] = await Promise.all([
+      BrandModel.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      BrandModel.countDocuments(filter),
+    ]);
+
+    // step: result
+    return {
+      brands,
+      meta: {
+        totalItems,
+        itemCount: brands.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      },
+    };
   }
 
   // ============================ getAllForManagement ============================
-  async getAllForManagement(query: ListBrandsQueryDTO) {
-    // step: retrieve brands with management visibility
-    return this.getAll(query, true);
+  async getAllForManagement(query: ListBrandsManagementQueryDTO) {
+    // step: build allow-listed filters
+    const page = Math.max(Number(query.page ?? 1), 1);
+    const limit = Math.min(Math.max(Number(query.limit ?? 20), 1), 100);
+    const filter: FilterQuery<Brand> = {};
+
+    if (query.isActive) {
+      filter.isActive = query.isActive === "true";
+    }
+    if (query.search) {
+      const keyword = query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { "name.ar": { $regex: keyword, $options: "i" } },
+        { "name.en": { $regex: keyword, $options: "i" } },
+        { slug: { $regex: keyword, $options: "i" } },
+      ];
+    }
+
+    // step: retrieve brands and count
+    const [brands, totalItems] = await Promise.all([
+      BrandModel.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      BrandModel.countDocuments(filter),
+    ]);
+
+    // step: result
+    return {
+      brands,
+      meta: {
+        totalItems,
+        itemCount: brands.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      },
+    };
   }
 
   // ============================ getByIdentifier ============================
@@ -51,17 +121,51 @@ export class BrandService {
   }
 
   // ============================ create ============================
-  async create(data: CreateBrandDTO) {
+  async create(data: CreateBrandDTO, logoFile?: Express.Multer.File) {
     // step: protect slug uniqueness
     const duplicate = await BrandModel.exists({ slug: data.slug });
     if (duplicate) throw new ConflictError("Brand slug is already used");
 
-    // step: create brand
-    return BrandModel.create(data);
+    // step: upload the supplied logo
+    const brandData: Record<string, unknown> = { ...data };
+    let uploadedPublicId: string | undefined;
+    if (logoFile) {
+      const uploadedLogo = await uploadSingleBuffer({
+        fileBuffer: logoFile.buffer,
+        storagePathOnCloudinary: "brands",
+      });
+      brandData["logo"] = uploadedLogo.secure_url;
+      uploadedPublicId = uploadedLogo.public_id;
+    }
+
+    // step: create brand and roll back a new upload on failure
+    try {
+      return await BrandModel.create(brandData);
+    } catch (error) {
+      if (uploadedPublicId) {
+        await destroySingleFile({ public_id: uploadedPublicId }).catch(
+          () => undefined,
+        );
+      }
+      throw error;
+    }
   }
 
   // ============================ update ============================
-  async update(id: string, data: UpdateBrandDTO) {
+  async update(
+    id: string,
+    data: UpdateBrandDTO,
+    logoFile?: Express.Multer.File,
+  ) {
+    // step: require a body field or uploaded logo
+    if (Object.keys(data).length === 0 && !logoFile) {
+      throw new BadRequestError("At least one brand field is required");
+    }
+
+    // step: confirm brand exists
+    const existing = await BrandModel.findById(id).lean();
+    if (!existing) throw new NotFoundError("Brand");
+
     // step: protect slug uniqueness
     if (data.slug) {
       const duplicate = await BrandModel.exists({
@@ -71,41 +175,96 @@ export class BrandService {
       if (duplicate) throw new ConflictError("Brand slug is already used");
     }
 
-    // step: prepare nullable fields
+    // step: upload the supplied logo
+    let uploadedPublicId: string | undefined;
+    let uploadedLogoUrl: string | undefined;
+    if (logoFile) {
+      const uploadedLogo = await uploadSingleBuffer({
+        fileBuffer: logoFile.buffer,
+        storagePathOnCloudinary: "brands",
+      });
+      uploadedPublicId = uploadedLogo.public_id;
+      uploadedLogoUrl = uploadedLogo.secure_url;
+    }
+
+    // step: prepare brand changes
     const update: Record<string, unknown> = { ...data };
-    if (data.logo === null) delete update["logo"];
+    if (uploadedLogoUrl) update["logo"] = uploadedLogoUrl;
 
     // step: apply brand changes
-    const brand = await BrandModel.findByIdAndUpdate(
-      id,
-      {
-        $set: update,
-        ...(data.logo === null && { $unset: { logo: 1 } }),
-      },
-      { new: true, runValidators: true },
-    );
+    let brand;
+    try {
+      brand = await BrandModel.findByIdAndUpdate(
+        id,
+        {
+          $set: update,
+        },
+        { new: true, runValidators: true },
+      );
+    } catch (error) {
+      if (uploadedPublicId) {
+        await destroySingleFile({ public_id: uploadedPublicId }).catch(
+          () => undefined,
+        );
+      }
+      throw error;
+    }
 
-    if (!brand) throw new NotFoundError("Brand");
+    if (!brand) {
+      if (uploadedPublicId) {
+        await destroySingleFile({ public_id: uploadedPublicId }).catch(
+          () => undefined,
+        );
+      }
+      throw new NotFoundError("Brand");
+    }
+
+    // step: remove the replaced Cloudinary logo
+    if (uploadedLogoUrl && existing.logo !== uploadedLogoUrl) {
+      const oldPublicId = existing.logo
+        ? extractPublicIdFromUrl(existing.logo)
+        : null;
+      if (oldPublicId) {
+        await destroySingleFile({ public_id: oldPublicId }).catch(
+          () => undefined,
+        );
+      }
+    }
 
     // step: result
     return brand;
   }
 
   // ============================ delete ============================
-  async delete(id: string): Promise<void> {
+  async delete(id: string) {
     // step: confirm brand exists
     const brand = await BrandModel.findById(id).lean();
     if (!brand) throw new NotFoundError("Brand");
 
-    // step: protect active products
-    const activeProduct = await ProductModel.exists({
+    // step: protect all products that reference the brand
+    const relatedProduct = await ProductModel.exists({
       brandId: id,
-      isActive: true,
     });
-    if (activeProduct) throw new ConflictError("Brand is used by active products");
+    if (relatedProduct) {
+      throw new ConflictError("Brand is used by products and cannot be deleted");
+    }
 
-    // step: soft-delete brand
-    await BrandModel.updateOne({ _id: id }, { $set: { isActive: false } });
+    // step: permanently delete brand
+    const deletedBrand = await BrandModel.findByIdAndDelete(id).lean();
+    if (!deletedBrand) throw new NotFoundError("Brand");
+
+    // step: remove the brand logo from Cloudinary
+    const logoPublicId = deletedBrand.logo
+      ? extractPublicIdFromUrl(deletedBrand.logo)
+      : null;
+    if (logoPublicId) {
+      await destroySingleFile({ public_id: logoPublicId }).catch(
+        () => undefined,
+      );
+    }
+
+    // step: result
+    return deletedBrand;
   }
 }
 

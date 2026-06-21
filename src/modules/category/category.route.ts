@@ -4,6 +4,12 @@ import { authenticate } from "../../middlewares/authenticate.js";
 import { authorize } from "../../middlewares/authorize.js";
 import { validate } from "../../middlewares/validate.js";
 import { asyncHandler } from "../../shared/utils/error/async.handler.js";
+import { multerUpload } from "../../middlewares/multer.upload.js";
+import { parseMultipartJson } from "../../middlewares/parse.multipart.json.js";
+import {
+  FileType,
+  StoreInEnum,
+} from "../../shared/types/multer.upload.types.js";
 import {
   categoryIdParamSchema,
   categoryIdentifierParamSchema,
@@ -28,14 +34,17 @@ router.get(
   authenticate,
   authorize("admin"),
   validate({ query: listCategoriesQuerySchema }),
-  asyncHandler(
-    categoryController.getAllForManagement.bind(categoryController),
-  ),
+  asyncHandler(categoryController.getAllForManagement.bind(categoryController)),
 );
 router.post(
   "/create",
   authenticate,
   authorize("admin"),
+  multerUpload({
+    sendedFileType: FileType.image,
+    storeIn: StoreInEnum.memory,
+  }).single("image"),
+  parseMultipartJson,
   validate({ body: createCategorySchema }),
   asyncHandler(categoryController.create.bind(categoryController)),
 );
@@ -43,6 +52,11 @@ router.patch(
   "/update/:id",
   authenticate,
   authorize("admin"),
+  multerUpload({
+    sendedFileType: FileType.image,
+    storeIn: StoreInEnum.memory,
+  }).single("image"),
+  parseMultipartJson,
   validate({ params: categoryIdParamSchema, body: updateCategorySchema }),
   asyncHandler(categoryController.update.bind(categoryController)),
 );

@@ -47,7 +47,10 @@ export class ProductController {
 
   // ---------------------------- create ----------------------------
   async create(req: Request, res: Response): Promise<void> {
-    const product = await productService.create(req.body as CreateProductDTO);
+    const product = await productService.create(
+      req.body as CreateProductDTO,
+      req.files as Express.Multer.File[] | undefined,
+    );
     responseHandler(res, HttpStatusCode.CREATED, "Product created successfully", product);
   }
 
@@ -56,6 +59,7 @@ export class ProductController {
     const product = await productService.update(
       req.params["id"] as string,
       req.body as UpdateProductDTO,
+      req.files as Express.Multer.File[] | undefined,
     );
     responseHandler(res, HttpStatusCode.OK, "Product updated successfully", product);
   }

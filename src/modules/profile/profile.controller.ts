@@ -26,7 +26,11 @@ export class ProfileController {
   async updateProfile(req: Request, res: Response): Promise<void> {
     const payload = (req as any).payload as AuthPayload;
     const data = req.body as UpdateProfileDTO;
-    const profile = await profileService.updateProfile(payload.userId, data);
+    const profile = await profileService.updateProfile(
+      payload.userId,
+      data,
+      req.file,
+    );
     responseHandler(
       res,
       HttpStatusCode.OK,

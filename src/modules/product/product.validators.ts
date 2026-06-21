@@ -2,7 +2,6 @@ import { z } from "zod";
 import {
   ProductCondition,
   ProductStockStatus,
-  ProductType,
 } from "../../shared/types/catalog.types.js";
 
 // ============================ localizedProductNameSchema ============================
@@ -42,11 +41,9 @@ export const createProductSchema = z
     name: localizedProductNameSchema,
     slug: z.string().min(1).max(220).trim().toLowerCase(),
     description: localizedProductDescriptionSchema.optional(),
-    type: z.enum(Object.values(ProductType)),
     categoryId: z.string().regex(/^[0-9a-fA-F]{24}$/),
     brandId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
     sku: z.string().min(1).max(100).trim().toUpperCase(),
-    images: z.array(z.url("Each image must be a valid URL")).max(20).optional(),
     price: z.number().nonnegative(),
     discountPrice: z.number().nonnegative().optional(),
     stockQuantity: z.number().int().nonnegative().optional(),
@@ -59,6 +56,7 @@ export const createProductSchema = z
     isPublished: z.boolean().optional(),
     isActive: z.boolean().optional(),
   })
+  .strict()
   .refine(
     (data) =>
       data.discountPrice === undefined || data.discountPrice <= data.price,
@@ -74,11 +72,9 @@ export const updateProductSchema = z
     name: localizedProductNameSchema.optional(),
     slug: z.string().min(1).max(220).trim().toLowerCase().optional(),
     description: localizedProductDescriptionSchema.optional(),
-    type: z.enum(Object.values(ProductType)).optional(),
     categoryId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
     brandId: z.string().regex(/^[0-9a-fA-F]{24}$/).nullable().optional(),
     sku: z.string().min(1).max(100).trim().toUpperCase().optional(),
-    images: z.array(z.url("Each image must be a valid URL")).max(20).optional(),
     price: z.number().nonnegative().optional(),
     discountPrice: z.number().nonnegative().nullable().optional(),
     stockQuantity: z.number().int().nonnegative().optional(),
@@ -91,9 +87,7 @@ export const updateProductSchema = z
     isPublished: z.boolean().optional(),
     isActive: z.boolean().optional(),
   })
-  .refine((data) => Object.values(data).some((value) => value !== undefined), {
-    message: "At least one product field is required",
-  });
+  .strict();
 
 // ============================ productIdentifierParamSchema ============================
 export const productIdentifierParamSchema = z.object({
@@ -112,7 +106,6 @@ export const listProductsQuerySchema = z.object({
   search: z.string().trim().max(100).optional(),
   categoryId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
   brandId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
-  type: z.enum(Object.values(ProductType)).optional(),
   stockStatus: z.enum(Object.values(ProductStockStatus)).optional(),
   condition: z.enum(Object.values(ProductCondition)).optional(),
   minPrice: z.string().regex(/^\d+(\.\d+)?$/).optional(),
