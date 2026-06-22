@@ -14,6 +14,7 @@ import {
   categoryIdParamSchema,
   categoryIdentifierParamSchema,
   createCategorySchema,
+  listCategoriesManagementQuerySchema,
   listCategoriesQuerySchema,
   updateCategorySchema,
 } from "./category.validators.js";
@@ -30,7 +31,7 @@ router.get(
   "/get-all-for-management",
   authenticate,
   authorize("admin"),
-  validate({ query: listCategoriesQuerySchema }),
+  validate({ query: listCategoriesManagementQuerySchema }),
   asyncHandler(categoryController.getAllForManagement.bind(categoryController)),
 );
 

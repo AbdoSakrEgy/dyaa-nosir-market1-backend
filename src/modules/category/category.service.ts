@@ -1,4 +1,4 @@
-import mongoose, { type FilterQuery } from "mongoose";
+import mongoose, { type FilterQuery, type SortOrder } from "mongoose";
 import {
   CategoryModel,
   type Category,
@@ -16,6 +16,7 @@ import {
 } from "../../shared/utils/cloudinary/cloudinary.service.js";
 import type {
   CreateCategoryDTO,
+  ListCategoriesManagementQueryDTO,
   ListCategoriesQueryDTO,
   UpdateCategoryDTO,
 } from "./category.validators.js";
@@ -24,17 +25,12 @@ import { validateCategoryParent } from "./utils/validate-category-parent.js";
 
 export class CategoryService {
   // ============================ getAll ============================
-  async getAll(query: ListCategoriesQueryDTO, includeInactive = false) {
+  async getAll(query: ListCategoriesQueryDTO) {
     // step: build allow-listed filters
     const page = Math.max(Number(query.page ?? 1), 1);
     const limit = Math.min(Math.max(Number(query.limit ?? 20), 1), 100);
-    const filter: FilterQuery<Category> = includeInactive
-      ? {}
-      : { isActive: true };
+    const filter: FilterQuery<Category> = { isActive: true };
 
-    if (includeInactive && query.isActive) {
-      filter.isActive = query.isActive === "true";
-    }
     if (query.parentId === "root") filter.parentId = { $exists: false };
     else if (query.parentId) filter.parentId = query.parentId;
     if (query.search) {
@@ -45,11 +41,22 @@ export class CategoryService {
         { slug: { $regex: keyword, $options: "i" } },
       ];
     }
+    const sortOptions: Record<string, Record<string, SortOrder>> = {
+      created_at_asc: { createdAt: 1 },
+      created_at_desc: { createdAt: -1 },
+      updated_at_asc: { updatedAt: 1 },
+      updated_at_desc: { updatedAt: -1 },
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      name_asc: { "name.en": 1 },
+      name_desc: { "name.en": -1 },
+    };
+    const sort = sortOptions[query.sort ?? "name_asc"] ?? { "name.en": 1 };
 
     // step: retrieve categories and count
     const [categories, totalItems] = await Promise.all([
       CategoryModel.find(filter)
-        .sort({ "name.en": 1 })
+        .sort(sort)
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),
@@ -70,9 +77,56 @@ export class CategoryService {
   }
 
   // ============================ getAllForManagement ============================
-  async getAllForManagement(query: ListCategoriesQueryDTO) {
-    // step: retrieve categories with management visibility
-    return this.getAll(query, true);
+  async getAllForManagement(query: ListCategoriesManagementQueryDTO) {
+    // step: build allow-listed filters
+    const page = Math.max(Number(query.page ?? 1), 1);
+    const limit = Math.min(Math.max(Number(query.limit ?? 20), 1), 100);
+    const filter: FilterQuery<Category> = {};
+
+    if (query.isActive) filter.isActive = query.isActive === "true";
+    if (query.parentId === "root") filter.parentId = { $exists: false };
+    else if (query.parentId) filter.parentId = query.parentId;
+    if (query.search) {
+      const keyword = query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { "name.ar": { $regex: keyword, $options: "i" } },
+        { "name.en": { $regex: keyword, $options: "i" } },
+        { slug: { $regex: keyword, $options: "i" } },
+      ];
+    }
+    const sortOptions: Record<string, Record<string, SortOrder>> = {
+      created_at_asc: { createdAt: 1 },
+      created_at_desc: { createdAt: -1 },
+      updated_at_asc: { updatedAt: 1 },
+      updated_at_desc: { updatedAt: -1 },
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      name_asc: { "name.en": 1 },
+      name_desc: { "name.en": -1 },
+    };
+    const sort = sortOptions[query.sort ?? "name_asc"] ?? { "name.en": 1 };
+
+    // step: retrieve categories and count
+    const [categories, totalItems] = await Promise.all([
+      CategoryModel.find(filter)
+        .sort(sort)
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      CategoryModel.countDocuments(filter),
+    ]);
+
+    // step: result
+    return {
+      categories,
+      meta: {
+        totalItems,
+        itemCount: categories.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      },
+    };
   }
 
   // ============================ getTree ============================

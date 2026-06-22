@@ -47,7 +47,13 @@ Keep `src/modules/**` service classes focused on API-facing service operations. 
 
 For every API service method that retrieves a collection using pagination, limits, filters, sorting, search, or similar query options, write the query-building logic directly inside that service method (for example, `async listProfiles(query: ListProfilesQueryDTO)`). Do not extract this logic into a separate helper function or a file in the module's `utils/` folder.
 
+When a module provides separate public and management collection APIs, each service method must build and execute its own query directly. Do not make the management method delegate to the public method through an `includeInactive`, `includeUnpublished`, or similar visibility flag.
+
+Define separate public and management Zod query schemas and DTOs whenever the management collection accepts additional filters. Wire each route, controller, and service method to its corresponding schema and DTO. Do not expose management-only filters such as `isActive` or `isPublished` through the public query schema.
+
 Keep pagination and filtering consistent with `ProfileService.listProfiles`: start a `// step: build allow-listed filters` block by calculating `page` and `limit`, create a typed Mongoose `FilterQuery<ModelType>`, and then apply only validated query fields. Next, retrieve the records and `totalItems` together with `Promise.all`, applying sorting, `skip`, `limit`, and `lean` directly to the query. Return the collection plus `meta` containing `totalItems`, `itemCount`, `itemsPerPage`, `totalPages`, and `currentPage`. Follow this structure for all new collection APIs.
+
+Every paginated query schema must begin with the four common optional fields in this exact order: `page`, `limit`, `search`, and `sort`. Every paginated `sort` enum must provide the basic timestamp options `created_at_asc`, `created_at_desc`, `updated_at_asc`, and `updated_at_desc`; resource-specific sort options may follow them. Translate all allow-listed values to explicit Mongoose sort objects inside the service method, and preserve a deterministic default sort when the client omits `sort`. Place resource-specific filters after these four common fields.
 
 In every `*.controller.ts` class, add a method-name banner comment directly above each method:
 

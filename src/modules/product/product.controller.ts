@@ -4,6 +4,7 @@ import { responseHandler } from "../../shared/utils/response/response.handler.js
 import { HttpStatusCode } from "../../shared/utils/response/http.status.code.js";
 import type {
   CreateProductDTO,
+  ListProductsManagementQueryDTO,
   ListProductsQueryDTO,
   UpdateProductDTO,
 } from "./product.validators.js";
@@ -26,7 +27,7 @@ export class ProductController {
   // ---------------------------- getAllForManagement ----------------------------
   async getAllForManagement(req: Request, res: Response): Promise<void> {
     const { products, meta } = await productService.getAllForManagement(
-      req.query as unknown as ListProductsQueryDTO,
+      req.query as unknown as ListProductsManagementQueryDTO,
     );
     responseHandler(
       res,

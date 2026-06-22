@@ -1,5 +1,8 @@
-import mongoose from "mongoose";
-import { ProductModel } from "../../DB/models/product/product.model.js";
+import mongoose, { type FilterQuery, type SortOrder } from "mongoose";
+import {
+  ProductModel,
+  type Product,
+} from "../../DB/models/product/product.model.js";
 import { ProductStockStatus } from "../../shared/types/catalog.types.js";
 import {
   BadRequestError,
@@ -13,21 +16,59 @@ import {
 } from "../../shared/utils/cloudinary/cloudinary.service.js";
 import type {
   CreateProductDTO,
+  ListProductsManagementQueryDTO,
   ListProductsQueryDTO,
   UpdateProductDTO,
 } from "./product.validators.js";
-import { buildProductQuery } from "./utils/build-product-query.js";
 import { validateProductRelations } from "./utils/validate-product-relations.js";
 import { validateProductState } from "./utils/validate-product-state.js";
 
 export class ProductService {
   // ============================ getAll ============================
-  async getAll(query: ListProductsQueryDTO, includeUnpublished = false) {
-    // step: build catalog query
-    const { filter, sort, page, limit } = buildProductQuery(
-      query,
-      includeUnpublished,
-    );
+  async getAll(query: ListProductsQueryDTO) {
+    // step: build allow-listed filters
+    const page = Math.max(Number(query.page ?? 1), 1);
+    const limit = Math.min(Math.max(Number(query.limit ?? 20), 1), 100);
+    const filter: FilterQuery<Product> = {
+      isPublished: true,
+      isActive: true,
+    };
+
+    if (query.categoryId) filter.categoryId = query.categoryId;
+    if (query.brandId) filter.brandId = query.brandId;
+    if (query.stockStatus) filter.stockStatus = query.stockStatus;
+    if (query.condition) filter.condition = query.condition;
+    if (query.isFeatured) filter.isFeatured = query.isFeatured === "true";
+    if (query.minPrice || query.maxPrice) {
+      filter.price = {
+        ...(query.minPrice && { $gte: Number(query.minPrice) }),
+        ...(query.maxPrice && { $lte: Number(query.maxPrice) }),
+      };
+    }
+    if (query.search) {
+      const keyword = query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { "name.ar": { $regex: keyword, $options: "i" } },
+        { "name.en": { $regex: keyword, $options: "i" } },
+        { sku: { $regex: keyword, $options: "i" } },
+        { "tags.ar": { $regex: keyword, $options: "i" } },
+        { "tags.en": { $regex: keyword, $options: "i" } },
+      ];
+    }
+
+    const sortOptions: Record<string, Record<string, SortOrder>> = {
+      created_at_asc: { createdAt: 1 },
+      created_at_desc: { createdAt: -1 },
+      updated_at_asc: { updatedAt: 1 },
+      updated_at_desc: { updatedAt: -1 },
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      price_asc: { price: 1 },
+      price_desc: { price: -1 },
+      name_asc: { "name.en": 1 },
+      name_desc: { "name.en": -1 },
+    };
+    const sort = sortOptions[query.sort ?? "newest"] ?? { createdAt: -1 };
 
     // step: retrieve products and count
     const [products, totalItems] = await Promise.all([
@@ -55,9 +96,73 @@ export class ProductService {
   }
 
   // ============================ getAllForManagement ============================
-  async getAllForManagement(query: ListProductsQueryDTO) {
-    // step: retrieve products with management visibility
-    return this.getAll(query, true);
+  async getAllForManagement(query: ListProductsManagementQueryDTO) {
+    // step: build allow-listed filters
+    const page = Math.max(Number(query.page ?? 1), 1);
+    const limit = Math.min(Math.max(Number(query.limit ?? 20), 1), 100);
+    const filter: FilterQuery<Product> = {};
+
+    if (query.categoryId) filter.categoryId = query.categoryId;
+    if (query.brandId) filter.brandId = query.brandId;
+    if (query.stockStatus) filter.stockStatus = query.stockStatus;
+    if (query.condition) filter.condition = query.condition;
+    if (query.isFeatured) filter.isFeatured = query.isFeatured === "true";
+    if (query.isPublished) filter.isPublished = query.isPublished === "true";
+    if (query.isActive) filter.isActive = query.isActive === "true";
+    if (query.minPrice || query.maxPrice) {
+      filter.price = {
+        ...(query.minPrice && { $gte: Number(query.minPrice) }),
+        ...(query.maxPrice && { $lte: Number(query.maxPrice) }),
+      };
+    }
+    if (query.search) {
+      const keyword = query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { "name.ar": { $regex: keyword, $options: "i" } },
+        { "name.en": { $regex: keyword, $options: "i" } },
+        { sku: { $regex: keyword, $options: "i" } },
+        { "tags.ar": { $regex: keyword, $options: "i" } },
+        { "tags.en": { $regex: keyword, $options: "i" } },
+      ];
+    }
+
+    const sortOptions: Record<string, Record<string, SortOrder>> = {
+      created_at_asc: { createdAt: 1 },
+      created_at_desc: { createdAt: -1 },
+      updated_at_asc: { updatedAt: 1 },
+      updated_at_desc: { updatedAt: -1 },
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      price_asc: { price: 1 },
+      price_desc: { price: -1 },
+      name_asc: { "name.en": 1 },
+      name_desc: { "name.en": -1 },
+    };
+    const sort = sortOptions[query.sort ?? "newest"] ?? { createdAt: -1 };
+
+    // step: retrieve products and count
+    const [products, totalItems] = await Promise.all([
+      ProductModel.find(filter)
+        .populate("categoryId", "name slug")
+        .populate("brandId", "name slug")
+        .sort(sort)
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      ProductModel.countDocuments(filter),
+    ]);
+
+    // step: result
+    return {
+      products,
+      meta: {
+        totalItems,
+        itemCount: products.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      },
+    };
   }
 
   // ============================ getByIdentifier ============================
@@ -247,10 +352,11 @@ export class ProductService {
 
   // ============================ delete ============================
   async delete(id: string): Promise<void> {
-    // step: archive product without removing order references
-    const product = await ProductModel.findByIdAndUpdate(id, {
-      $set: { isActive: false, isPublished: false },
-    });
+    // step: archive only an active product without removing order references
+    const product = await ProductModel.findOneAndUpdate(
+      { _id: id, isActive: true },
+      { $set: { isActive: false, isPublished: false } },
+    );
 
     if (!product) throw new NotFoundError("Product");
   }

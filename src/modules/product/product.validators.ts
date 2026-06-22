@@ -104,6 +104,48 @@ export const listProductsQuerySchema = z.object({
   page: z.string().regex(/^\d+$/).optional(),
   limit: z.string().regex(/^\d+$/).optional(),
   search: z.string().trim().max(100).optional(),
+  sort: z
+    .enum([
+      "created_at_asc",
+      "created_at_desc",
+      "updated_at_asc",
+      "updated_at_desc",
+      "newest",
+      "oldest",
+      "price_asc",
+      "price_desc",
+      "name_asc",
+      "name_desc",
+    ])
+    .optional(),
+  categoryId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+  brandId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
+  stockStatus: z.enum(Object.values(ProductStockStatus)).optional(),
+  condition: z.enum(Object.values(ProductCondition)).optional(),
+  minPrice: z.string().regex(/^\d+(\.\d+)?$/).optional(),
+  maxPrice: z.string().regex(/^\d+(\.\d+)?$/).optional(),
+  isFeatured: z.enum(["true", "false"]).optional(),
+});
+
+// ============================ listProductsManagementQuerySchema ============================
+export const listProductsManagementQuerySchema = z.object({
+  page: z.string().regex(/^\d+$/).optional(),
+  limit: z.string().regex(/^\d+$/).optional(),
+  search: z.string().trim().max(100).optional(),
+  sort: z
+    .enum([
+      "created_at_asc",
+      "created_at_desc",
+      "updated_at_asc",
+      "updated_at_desc",
+      "newest",
+      "oldest",
+      "price_asc",
+      "price_desc",
+      "name_asc",
+      "name_desc",
+    ])
+    .optional(),
   categoryId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
   brandId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
   stockStatus: z.enum(Object.values(ProductStockStatus)).optional(),
@@ -113,18 +155,11 @@ export const listProductsQuerySchema = z.object({
   isFeatured: z.enum(["true", "false"]).optional(),
   isPublished: z.enum(["true", "false"]).optional(),
   isActive: z.enum(["true", "false"]).optional(),
-  sort: z
-    .enum([
-      "newest",
-      "oldest",
-      "price_asc",
-      "price_desc",
-      "name_asc",
-      "name_desc",
-    ])
-    .optional(),
 });
 
 export type CreateProductDTO = z.infer<typeof createProductSchema>;
 export type UpdateProductDTO = z.infer<typeof updateProductSchema>;
 export type ListProductsQueryDTO = z.infer<typeof listProductsQuerySchema>;
+export type ListProductsManagementQueryDTO = z.infer<
+  typeof listProductsManagementQuerySchema
+>;

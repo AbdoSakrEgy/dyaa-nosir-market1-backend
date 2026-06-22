@@ -1,4 +1,4 @@
-import mongoose, { type FilterQuery } from "mongoose";
+import mongoose, { type FilterQuery, type SortOrder } from "mongoose";
 import {
   BrandModel,
   type Brand,
@@ -37,11 +37,22 @@ export class BrandService {
         { slug: { $regex: keyword, $options: "i" } },
       ];
     }
+    const sortOptions: Record<string, Record<string, SortOrder>> = {
+      created_at_asc: { createdAt: 1 },
+      created_at_desc: { createdAt: -1 },
+      updated_at_asc: { updatedAt: 1 },
+      updated_at_desc: { updatedAt: -1 },
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      name_asc: { "name.en": 1 },
+      name_desc: { "name.en": -1 },
+    };
+    const sort = sortOptions[query.sort ?? "newest"] ?? { createdAt: -1 };
 
     // step: retrieve brands and count
     const [brands, totalItems] = await Promise.all([
       BrandModel.find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),
@@ -79,11 +90,22 @@ export class BrandService {
         { slug: { $regex: keyword, $options: "i" } },
       ];
     }
+    const sortOptions: Record<string, Record<string, SortOrder>> = {
+      created_at_asc: { createdAt: 1 },
+      created_at_desc: { createdAt: -1 },
+      updated_at_asc: { updatedAt: 1 },
+      updated_at_desc: { updatedAt: -1 },
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      name_asc: { "name.en": 1 },
+      name_desc: { "name.en": -1 },
+    };
+    const sort = sortOptions[query.sort ?? "newest"] ?? { createdAt: -1 };
 
     // step: retrieve brands and count
     const [brands, totalItems] = await Promise.all([
       BrandModel.find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),

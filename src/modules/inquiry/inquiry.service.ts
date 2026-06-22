@@ -1,4 +1,4 @@
-import type { FilterQuery } from "mongoose";
+import type { FilterQuery, SortOrder } from "mongoose";
 import { InquiryModel } from "../../DB/models/communication/inquiry.model.js";
 import type { Inquiry } from "../../DB/models/communication/inquiry.model.js";
 import { ProductModel } from "../../DB/models/product/product.model.js";
@@ -33,11 +33,9 @@ export class InquiryService {
 
   // ============================ getAll ============================
   async getAll(query: ListInquiriesQueryDTO) {
-    // step: prepare pagination
+    // step: build allow-listed filters
     const page = Math.max(Number(query.page ?? 1), 1);
     const limit = Math.min(Math.max(Number(query.limit ?? 20), 1), 100);
-
-    // step: build administration filters
     const filter: FilterQuery<Inquiry> = {};
 
     if (query.status) filter.status = query.status;
@@ -54,13 +52,24 @@ export class InquiryService {
         { message: { $regex: keyword, $options: "i" } },
       ];
     }
+    const sortOptions: Record<string, Record<string, SortOrder>> = {
+      created_at_asc: { createdAt: 1 },
+      created_at_desc: { createdAt: -1 },
+      updated_at_asc: { updatedAt: 1 },
+      updated_at_desc: { updatedAt: -1 },
+      newest: { createdAt: -1 },
+      oldest: { createdAt: 1 },
+      name_asc: { customerName: 1 },
+      name_desc: { customerName: -1 },
+    };
+    const sort = sortOptions[query.sort ?? "newest"] ?? { createdAt: -1 };
 
     // step: retrieve inquiries and count
     const [inquiries, totalItems] = await Promise.all([
       InquiryModel.find(filter)
         .populate("productId", "name slug sku images")
         .populate("userId", "name email phone")
-        .sort({ createdAt: -1 })
+        .sort(sort)
         .skip((page - 1) * limit)
         .limit(limit)
         .lean(),

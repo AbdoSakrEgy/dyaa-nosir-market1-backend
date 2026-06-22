@@ -12,6 +12,7 @@ import {
 } from "../../shared/types/multer.upload.types.js";
 import {
   createProductSchema,
+  listProductsManagementQuerySchema,
   listProductsQuerySchema,
   productIdParamSchema,
   productIdentifierParamSchema,
@@ -25,13 +26,21 @@ router.get(
   validate({ query: listProductsQuerySchema }),
   asyncHandler(productController.getAll.bind(productController)),
 );
+
 router.get(
   "/get-all-for-management",
   authenticate,
   authorize("admin"),
-  validate({ query: listProductsQuerySchema }),
+  validate({ query: listProductsManagementQuerySchema }),
   asyncHandler(productController.getAllForManagement.bind(productController)),
 );
+
+router.get(
+  "/get-by-identifier/:identifier",
+  validate({ params: productIdentifierParamSchema }),
+  asyncHandler(productController.getByIdentifier.bind(productController)),
+);
+
 router.post(
   "/create",
   authenticate,
@@ -44,6 +53,7 @@ router.post(
   validate({ body: createProductSchema }),
   asyncHandler(productController.create.bind(productController)),
 );
+
 router.patch(
   "/update/:id",
   authenticate,
@@ -56,17 +66,13 @@ router.patch(
   validate({ params: productIdParamSchema, body: updateProductSchema }),
   asyncHandler(productController.update.bind(productController)),
 );
+
 router.delete(
   "/delete/:id",
   authenticate,
   authorize("admin"),
   validate({ params: productIdParamSchema }),
   asyncHandler(productController.delete.bind(productController)),
-);
-router.get(
-  "/get-by-identifier/:identifier",
-  validate({ params: productIdentifierParamSchema }),
-  asyncHandler(productController.getByIdentifier.bind(productController)),
 );
 
 export default router;

@@ -21,6 +21,18 @@ export const listProfilesQuerySchema = z.object({
   page: z.string().regex(/^\d+$/).optional(),
   limit: z.string().regex(/^\d+$/).optional(),
   search: z.string().trim().max(100).optional(),
+  sort: z
+    .enum([
+      "created_at_asc",
+      "created_at_desc",
+      "updated_at_asc",
+      "updated_at_desc",
+      "newest",
+      "oldest",
+      "name_asc",
+      "name_desc",
+    ])
+    .optional(),
   roleId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
   isActive: z.enum(["true", "false"]).optional(),
 });
