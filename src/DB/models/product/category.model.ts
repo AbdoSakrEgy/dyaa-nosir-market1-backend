@@ -24,7 +24,13 @@ const localizedOptionalSchema = new Schema(
 const categorySchema = new Schema(
   {
     name: { type: localizedRequiredSchema, required: true },
-    slug: { type: localizedRequiredSchema, required: true },
+    slug: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+      unique: true,
+    },
     description: { type: localizedOptionalSchema },
     parentId: { type: Schema.Types.ObjectId, ref: "Category" },
     image: { type: String, trim: true },
@@ -33,9 +39,6 @@ const categorySchema = new Schema(
   { timestamps: true },
 );
 
-// Keep localized slugs unique and speed up common category tree lookups.
-categorySchema.index({ "slug.ar": 1 }, { unique: true });
-categorySchema.index({ "slug.en": 1 }, { unique: true });
 categorySchema.index({ parentId: 1, isActive: 1 });
 
 export type Category = InferSchemaType<typeof categorySchema>;

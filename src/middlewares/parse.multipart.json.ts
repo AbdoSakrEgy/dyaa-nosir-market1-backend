@@ -8,33 +8,6 @@ const numericFields = new Set([
   "stockQuantity",
 ]);
 
-const parseFieldValue = (field: string, value: unknown): unknown => {
-  if (typeof value !== "string") return value;
-
-  const trimmedValue = value.trim();
-
-  if (numericFields.has(field)) {
-    const numericValue = Number(trimmedValue);
-    if (Number.isFinite(numericValue)) return numericValue;
-  }
-
-  if (trimmedValue === "true") return true;
-  if (trimmedValue === "false") return false;
-  if (trimmedValue === "null") return null;
-
-  if (trimmedValue.startsWith("{") || trimmedValue.startsWith("[")) {
-    try {
-      return JSON.parse(trimmedValue) as unknown;
-    } catch {
-      throw new BadRequestError(
-        `Multipart field '${field}' must contain valid JSON`,
-      );
-    }
-  }
-
-  return value;
-};
-
 export const parseMultipartJson = (
   req: Request,
   _res: Response,
@@ -73,4 +46,31 @@ export const parseMultipartJson = (
         : new BadRequestError("Multipart data must contain valid JSON"),
     );
   }
+};
+
+const parseFieldValue = (field: string, value: unknown): unknown => {
+  if (typeof value !== "string") return value;
+
+  const trimmedValue = value.trim();
+
+  if (numericFields.has(field)) {
+    const numericValue = Number(trimmedValue);
+    if (Number.isFinite(numericValue)) return numericValue;
+  }
+
+  if (trimmedValue === "true") return true;
+  if (trimmedValue === "false") return false;
+  if (trimmedValue === "null") return null;
+
+  if (trimmedValue.startsWith("{") || trimmedValue.startsWith("[")) {
+    try {
+      return JSON.parse(trimmedValue) as unknown;
+    } catch {
+      throw new BadRequestError(
+        `Multipart field '${field}' must contain valid JSON`,
+      );
+    }
+  }
+
+  return value;
 };

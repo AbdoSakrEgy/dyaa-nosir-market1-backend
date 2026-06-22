@@ -10,7 +10,8 @@
     "dev": "concurrently \"tsc --noEmit --watch\" \"tsx watch src/server.ts\"",
     "lint": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "tsx src/DB/seed.ts"
+    "seed": "tsx src/DB/seed.ts",
+    "migrate:category-slugs": "tsx src/DB/migrations/migrate-category-slugs.ts"
   },
   "engines": {
     "node": ">=20.0.0"

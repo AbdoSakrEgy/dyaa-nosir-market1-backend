@@ -25,10 +25,7 @@ router.get(
   validate({ query: listCategoriesQuerySchema }),
   asyncHandler(categoryController.getAll.bind(categoryController)),
 );
-router.get(
-  "/get-tree",
-  asyncHandler(categoryController.getTree.bind(categoryController)),
-);
+
 router.get(
   "/get-all-for-management",
   authenticate,
@@ -36,6 +33,18 @@ router.get(
   validate({ query: listCategoriesQuerySchema }),
   asyncHandler(categoryController.getAllForManagement.bind(categoryController)),
 );
+
+router.get(
+  "/get-tree",
+  asyncHandler(categoryController.getTree.bind(categoryController)),
+);
+
+router.get(
+  "/get-by-identifier/:identifier",
+  validate({ params: categoryIdentifierParamSchema }),
+  asyncHandler(categoryController.getByIdentifier.bind(categoryController)),
+);
+
 router.post(
   "/create",
   authenticate,
@@ -48,6 +57,7 @@ router.post(
   validate({ body: createCategorySchema }),
   asyncHandler(categoryController.create.bind(categoryController)),
 );
+
 router.patch(
   "/update/:id",
   authenticate,
@@ -60,17 +70,13 @@ router.patch(
   validate({ params: categoryIdParamSchema, body: updateCategorySchema }),
   asyncHandler(categoryController.update.bind(categoryController)),
 );
+
 router.delete(
   "/delete/:id",
   authenticate,
   authorize("admin"),
   validate({ params: categoryIdParamSchema }),
   asyncHandler(categoryController.delete.bind(categoryController)),
-);
-router.get(
-  "/get-by-identifier/:identifier",
-  validate({ params: categoryIdentifierParamSchema }),
-  asyncHandler(categoryController.getByIdentifier.bind(categoryController)),
 );
 
 export default router;

@@ -85,7 +85,7 @@ const seedDatabase = async (): Promise<void> => {
 
   const tractorCategory = await CategoryModel.create({
     name: { ar: "جرارات", en: "Tractors" },
-    slug: { ar: "jararat", en: "tractors" },
+    slug: "tractors",
     description: {
       ar: "جرارات زراعية جديدة ومستعملة",
       en: "New and used tractors",
@@ -95,19 +95,19 @@ const seedDatabase = async (): Promise<void> => {
 
   const tractorPartsCategory = await CategoryModel.create({
     name: { ar: "قطع غيار جرارات", en: "Tractor Spare Parts" },
-    slug: { ar: "qeta-ghyar-jararat", en: "tractor-spare-parts" },
+    slug: "tractor-spare-parts",
     isActive: true,
   });
 
   const carPartsCategory = await CategoryModel.create({
     name: { ar: "قطع غيار سيارات", en: "Car Spare Parts" },
-    slug: { ar: "qeta-ghyar-sayarat", en: "car-spare-parts" },
+    slug: "car-spare-parts",
     isActive: true,
   });
 
   const filtersCategory = await CategoryModel.create({
     name: { ar: "فلاتر", en: "Filters" },
-    slug: { ar: "falater", en: "filters" },
+    slug: "filters",
     parentId: tractorPartsCategory._id,
     isActive: true,
   });

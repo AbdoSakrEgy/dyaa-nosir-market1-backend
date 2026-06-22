@@ -6,11 +6,8 @@ const localizedCategoryNameSchema = z.object({
   en: z.string().min(2).max(100).trim(),
 });
 
-// ============================ localizedCategorySlugSchema ============================
-const localizedCategorySlugSchema = z.object({
-  ar: z.string().min(1).max(120).trim().toLowerCase(),
-  en: z.string().min(1).max(120).trim().toLowerCase(),
-});
+// ============================ categorySlugSchema ============================
+const categorySlugSchema = z.string().min(1).max(120).trim().toLowerCase();
 
 // ============================ localizedCategoryDescriptionSchema ============================
 const localizedCategoryDescriptionSchema = z.object({
@@ -21,7 +18,7 @@ const localizedCategoryDescriptionSchema = z.object({
 // ============================ createCategorySchema ============================
 export const createCategorySchema = z.object({
   name: localizedCategoryNameSchema,
-  slug: localizedCategorySlugSchema,
+  slug: categorySlugSchema,
   description: localizedCategoryDescriptionSchema.optional(),
   parentId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
   isActive: z.boolean().optional(),
@@ -31,7 +28,7 @@ export const createCategorySchema = z.object({
 export const updateCategorySchema = z
   .object({
     name: localizedCategoryNameSchema.optional(),
-    slug: localizedCategorySlugSchema.optional(),
+    slug: categorySlugSchema.optional(),
     description: localizedCategoryDescriptionSchema.optional(),
     parentId: z.string().regex(/^[0-9a-fA-F]{24}$/).nullable().optional(),
     isActive: z.boolean().optional(),
@@ -50,6 +47,9 @@ export const categoryIdParamSchema = z.object({
 
 // ============================ listCategoriesQuerySchema ============================
 export const listCategoriesQuerySchema = z.object({
+  page: z.string().regex(/^\d+$/).optional(),
+  limit: z.string().regex(/^\d+$/).optional(),
+  search: z.string().trim().max(100).optional(),
   parentId: z
     .union([z.literal("root"), z.string().regex(/^[0-9a-fA-F]{24}$/)])
     .optional(),

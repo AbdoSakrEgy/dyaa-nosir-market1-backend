@@ -1,5 +1,8 @@
-import mongoose from "mongoose";
-import { CategoryModel } from "../../DB/models/product/category.model.js";
+import mongoose, { type FilterQuery } from "mongoose";
+import {
+  CategoryModel,
+  type Category,
+} from "../../DB/models/product/category.model.js";
 import { ProductModel } from "../../DB/models/product/product.model.js";
 import {
   BadRequestError,
@@ -22,18 +25,48 @@ import { validateCategoryParent } from "./utils/validate-category-parent.js";
 export class CategoryService {
   // ============================ getAll ============================
   async getAll(query: ListCategoriesQueryDTO, includeInactive = false) {
-    // step: build public category filter
-    const filter: Record<string, unknown> = includeInactive
+    // step: build allow-listed filters
+    const page = Math.max(Number(query.page ?? 1), 1);
+    const limit = Math.min(Math.max(Number(query.limit ?? 20), 1), 100);
+    const filter: FilterQuery<Category> = includeInactive
       ? {}
       : { isActive: true };
+
     if (includeInactive && query.isActive) {
-      filter["isActive"] = query.isActive === "true";
+      filter.isActive = query.isActive === "true";
     }
     if (query.parentId === "root") filter.parentId = { $exists: false };
     else if (query.parentId) filter.parentId = query.parentId;
+    if (query.search) {
+      const keyword = query.search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      filter.$or = [
+        { "name.ar": { $regex: keyword, $options: "i" } },
+        { "name.en": { $regex: keyword, $options: "i" } },
+        { slug: { $regex: keyword, $options: "i" } },
+      ];
+    }
 
-    // step: retrieve categories
-    return CategoryModel.find(filter).sort({ "name.en": 1 }).lean();
+    // step: retrieve categories and count
+    const [categories, totalItems] = await Promise.all([
+      CategoryModel.find(filter)
+        .sort({ "name.en": 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      CategoryModel.countDocuments(filter),
+    ]);
+
+    // step: result
+    return {
+      categories,
+      meta: {
+        totalItems,
+        itemCount: categories.length,
+        itemsPerPage: limit,
+        totalPages: Math.ceil(totalItems / limit),
+        currentPage: page,
+      },
+    };
   }
 
   // ============================ getAllForManagement ============================
@@ -57,10 +90,10 @@ export class CategoryService {
 
   // ============================ getByIdentifier ============================
   async getByIdentifier(identifier: string) {
-    // step: find category by id or localized slug
+    // step: find category by id or slug
     const identifierFilter = mongoose.isValidObjectId(identifier)
       ? { _id: identifier }
-      : { $or: [{ "slug.ar": identifier }, { "slug.en": identifier }] };
+      : { slug: identifier.toLowerCase() };
     const category = await CategoryModel.findOne({
       ...identifierFilter,
       isActive: true,
@@ -74,19 +107,11 @@ export class CategoryService {
 
   // ============================ create ============================
   async create(data: CreateCategoryDTO, imageFile?: Express.Multer.File) {
-    // step: normalize localized slugs
-    data.slug = {
-      ar: data.slug.ar.toLowerCase(),
-      en: data.slug.en.toLowerCase(),
-    };
+    // step: normalize slug
+    data.slug = data.slug.toLowerCase();
 
-    // step: protect localized slug uniqueness
-    const duplicate = await CategoryModel.exists({
-      $or: [
-        { "slug.ar": data.slug.ar },
-        { "slug.en": data.slug.en },
-      ],
-    });
+    // step: protect slug uniqueness
+    const duplicate = await CategoryModel.exists({ slug: data.slug });
     if (duplicate) throw new ConflictError("Category slug is already used");
 
     // step: validate parent category
@@ -132,22 +157,16 @@ export class CategoryService {
     const existing = await CategoryModel.findById(id).lean();
     if (!existing) throw new NotFoundError("Category");
 
-    // step: normalize localized slugs
+    // step: normalize slug
     if (data.slug) {
-      data.slug = {
-        ar: data.slug.ar.toLowerCase(),
-        en: data.slug.en.toLowerCase(),
-      };
+      data.slug = data.slug.toLowerCase();
     }
 
-    // step: protect localized slug uniqueness
+    // step: protect slug uniqueness
     if (data.slug) {
       const duplicate = await CategoryModel.exists({
         _id: { $ne: id },
-        $or: [
-          { "slug.ar": data.slug.ar },
-          { "slug.en": data.slug.en },
-        ],
+        slug: data.slug,
       });
       if (duplicate) throw new ConflictError("Category slug is already used");
     }
@@ -224,21 +243,32 @@ export class CategoryService {
     const category = await CategoryModel.findById(id).lean();
     if (!category) throw new NotFoundError("Category");
 
-    // step: protect active descendants and products
-    const [activeChild, activeProduct] = await Promise.all([
-      CategoryModel.exists({ parentId: id, isActive: true }),
-      ProductModel.exists({ categoryId: id, isActive: true }),
+    // step: protect descendants and products
+    const [relatedChild, relatedProduct] = await Promise.all([
+      CategoryModel.exists({ parentId: id }),
+      ProductModel.exists({ categoryId: id }),
     ]);
 
-    if (activeChild) {
-      throw new ConflictError("Deactivate child categories first");
+    if (relatedChild) {
+      throw new ConflictError("Delete child categories first");
     }
-    if (activeProduct) {
-      throw new ConflictError("Category is used by active products");
+    if (relatedProduct) {
+      throw new ConflictError("Category is used by products and cannot be deleted");
     }
 
-    // step: soft-delete category
-    await CategoryModel.updateOne({ _id: id }, { $set: { isActive: false } });
+    // step: permanently delete category
+    const deletedCategory = await CategoryModel.findByIdAndDelete(id).lean();
+    if (!deletedCategory) throw new NotFoundError("Category");
+
+    // step: remove category image from Cloudinary
+    const imagePublicId = deletedCategory.image
+      ? extractPublicIdFromUrl(deletedCategory.image)
+      : null;
+    if (imagePublicId) {
+      await destroySingleFile({ public_id: imagePublicId }).catch(
+        () => undefined,
+      );
+    }
   }
 }
 

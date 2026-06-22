@@ -11,18 +11,30 @@ import type {
 export class CategoryController {
   // ---------------------------- getAll ----------------------------
   async getAll(req: Request, res: Response): Promise<void> {
-    const categories = await categoryService.getAll(
+    const { categories, meta } = await categoryService.getAll(
       req.query as unknown as ListCategoriesQueryDTO,
     );
-    responseHandler(res, HttpStatusCode.OK, "Categories retrieved successfully", categories);
+    responseHandler(
+      res,
+      HttpStatusCode.OK,
+      "Categories retrieved successfully",
+      categories,
+      meta,
+    );
   }
 
   // ---------------------------- getAllForManagement ----------------------------
   async getAllForManagement(req: Request, res: Response): Promise<void> {
-    const categories = await categoryService.getAllForManagement(
+    const { categories, meta } = await categoryService.getAllForManagement(
       req.query as unknown as ListCategoriesQueryDTO,
     );
-    responseHandler(res, HttpStatusCode.OK, "Categories retrieved successfully", categories);
+    responseHandler(
+      res,
+      HttpStatusCode.OK,
+      "Categories retrieved successfully",
+      categories,
+      meta,
+    );
   }
 
   // ---------------------------- getTree ----------------------------
@@ -66,7 +78,7 @@ export class CategoryController {
   // ---------------------------- delete ----------------------------
   async delete(req: Request, res: Response): Promise<void> {
     await categoryService.delete(req.params["id"] as string);
-    responseHandler(res, HttpStatusCode.OK, "Category deactivated successfully");
+    responseHandler(res, HttpStatusCode.OK, "Category deleted successfully");
   }
 }
 
