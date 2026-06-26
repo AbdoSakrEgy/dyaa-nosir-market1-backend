@@ -19,6 +19,22 @@ pnpm dev
 curl http://localhost:5000/api/v1/health
 ```
 
+## Environment Notes
+
+For Gmail/Nodemailer email delivery, set:
+
+```env
+NODEMAILER_HOST=smtp.gmail.com
+NODEMAILER_PORT=587
+NODEMAILER_TIMEOUT_MS=10000
+NODEMAILER_SENDER_EMAIL=your-email@gmail.com
+NODEMAILER_SENDER_EMAIL_GOOGLE_APP_PASSWORD=your-google-app-password
+```
+
+Use port `587` for STARTTLS or port `465` for SSL. `NODEMAILER_TIMEOUT_MS`
+defaults to `10000`, which prevents auth endpoints from waiting too long when
+SMTP is unavailable during deployment.
+
 ## 📁 Project Structure
 
 ```

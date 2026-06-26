@@ -15,15 +15,32 @@ export const sendEmail = async ({
   subject: string;
   html: string;
 }): Promise<EmailDeliveryResult> => {
+  // step: avoid slow SMTP attempts when deployment mail config is incomplete
+  if (
+    !env.NODEMAILER_SENDER_EMAIL ||
+    !env.NODEMAILER_SENDER_EMAIL_GOOGLE_APP_PASSWORD
+  ) {
+    logger.warn({ to, subject }, "Email config is missing credentials");
+    return { isEmailSent: false };
+  }
+
   const transporter = createTransport({
-    host: env.NODEMAILER_HOST as string,
-    port: env.NODEMAILER_PORT,
-    secure: true,
-    service: "gmail",
+    ...(env.NODEMAILER_HOST
+      ? {
+          host: env.NODEMAILER_HOST,
+          port: env.NODEMAILER_PORT,
+          secure: env.NODEMAILER_PORT === 465,
+        }
+      : {
+          service: "gmail",
+        }),
     auth: {
       user: env.NODEMAILER_SENDER_EMAIL,
       pass: env.NODEMAILER_SENDER_EMAIL_GOOGLE_APP_PASSWORD,
     },
+    connectionTimeout: env.NODEMAILER_TIMEOUT_MS,
+    greetingTimeout: env.NODEMAILER_TIMEOUT_MS,
+    socketTimeout: env.NODEMAILER_TIMEOUT_MS,
     // tls: {
     //   rejectUnauthorized: false, // Only for development
     // },

@@ -29,6 +29,10 @@ export const env = {
   // ======================== send.email.ts ========================
   NODEMAILER_HOST: process.env["NODEMAILER_HOST"] ?? "",
   NODEMAILER_PORT: parseInt(process.env["NODEMAILER_PORT"] ?? "587", 10),
+  NODEMAILER_TIMEOUT_MS: parseInt(
+    process.env["NODEMAILER_TIMEOUT_MS"] ?? "10000",
+    10,
+  ),
   NODEMAILER_SENDER_EMAIL: process.env["NODEMAILER_SENDER_EMAIL"] ?? "",
   NODEMAILER_SENDER_EMAIL_GOOGLE_APP_PASSWORD:
     process.env["NODEMAILER_SENDER_EMAIL_GOOGLE_APP_PASSWORD"] ?? "",
