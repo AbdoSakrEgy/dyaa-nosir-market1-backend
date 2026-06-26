@@ -18,7 +18,7 @@ export class BrandController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Brands retrieved successfully",
+      "brand.list",
       brands,
       meta,
     );
@@ -32,7 +32,7 @@ export class BrandController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Brands retrieved successfully",
+      "brand.list",
       brands,
       meta,
     );
@@ -43,7 +43,7 @@ export class BrandController {
     const brand = await brandService.getByIdentifier(
       req.params["identifier"] as string,
     );
-    responseHandler(res, HttpStatusCode.OK, "Brand retrieved successfully", brand);
+    responseHandler(res, HttpStatusCode.OK, "brand.retrieved", brand);
   }
 
   // ---------------------------- create ----------------------------
@@ -52,7 +52,7 @@ export class BrandController {
       req.body as CreateBrandDTO,
       req.file,
     );
-    responseHandler(res, HttpStatusCode.CREATED, "Brand created successfully", brand);
+    responseHandler(res, HttpStatusCode.CREATED, "brand.created", brand);
   }
 
   // ---------------------------- update ----------------------------
@@ -62,15 +62,15 @@ export class BrandController {
       req.body as UpdateBrandDTO,
       req.file,
     );
-    responseHandler(res, HttpStatusCode.OK, "Brand updated successfully", brand);
+    responseHandler(res, HttpStatusCode.OK, "brand.updated", brand);
   }
 
   // ---------------------------- delete ----------------------------
   async delete(req: Request, res: Response): Promise<void> {
     const brand = await brandService.delete(req.params["id"] as string);
     const message = brand.isActive
-      ? "Brand deleted permanently"
-      : "Previously deactivated brand deleted permanently";
+      ? "brand.deleted"
+      : "brand.previouslyDeactivatedDeleted";
     responseHandler(
       res,
       HttpStatusCode.OK,

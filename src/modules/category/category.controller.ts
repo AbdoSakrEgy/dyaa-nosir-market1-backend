@@ -18,7 +18,7 @@ export class CategoryController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Categories retrieved successfully",
+      "category.list",
       categories,
       meta,
     );
@@ -32,7 +32,7 @@ export class CategoryController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Categories retrieved successfully",
+      "category.list",
       categories,
       meta,
     );
@@ -44,7 +44,7 @@ export class CategoryController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Category tree retrieved successfully",
+      "category.tree",
       categories,
     );
   }
@@ -54,7 +54,7 @@ export class CategoryController {
     const category = await categoryService.getByIdentifier(
       req.params["identifier"] as string,
     );
-    responseHandler(res, HttpStatusCode.OK, "Category retrieved successfully", category);
+    responseHandler(res, HttpStatusCode.OK, "category.retrieved", category);
   }
 
   // ---------------------------- create ----------------------------
@@ -63,7 +63,7 @@ export class CategoryController {
       req.body as CreateCategoryDTO,
       req.file,
     );
-    responseHandler(res, HttpStatusCode.CREATED, "Category created successfully", category);
+    responseHandler(res, HttpStatusCode.CREATED, "category.created", category);
   }
 
   // ---------------------------- update ----------------------------
@@ -73,13 +73,13 @@ export class CategoryController {
       req.body as UpdateCategoryDTO,
       req.file,
     );
-    responseHandler(res, HttpStatusCode.OK, "Category updated successfully", category);
+    responseHandler(res, HttpStatusCode.OK, "category.updated", category);
   }
 
   // ---------------------------- delete ----------------------------
   async delete(req: Request, res: Response): Promise<void> {
     await categoryService.delete(req.params["id"] as string);
-    responseHandler(res, HttpStatusCode.OK, "Category deleted successfully");
+    responseHandler(res, HttpStatusCode.OK, "category.deleted");
   }
 }
 

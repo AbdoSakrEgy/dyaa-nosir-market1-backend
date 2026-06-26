@@ -3,79 +3,79 @@ import { Gender } from "../../shared/types/shared.types.js";
 
 // ============================ googleRegisterSchema ============================
 export const googleRegisterSchema = z.object({
-  googleToken: z.string().min(1, "Google token is required"),
+  googleToken: z.string().min(1, "validation.googleTokenRequired"),
   phone: z
     .string()
-    .min(8, "Phone must be at least 8 characters")
-    .max(20, "Phone must be at most 20 characters")
+    .min(8, "validation.phoneMin")
+    .max(20, "validation.phoneMax")
     .trim(),
 });
 
 // ============================ googleLoginSchema ============================
 export const googleLoginSchema = z.object({
-  googleToken: z.string().min(1, "Google token is required"),
+  googleToken: z.string().min(1, "validation.googleTokenRequired"),
 });
 
 // ============================ refreshTokenSchema ============================
 export const refreshTokenSchema = z.object({
-  refreshToken: z.string().min(1, "Refresh token is required"),
+  refreshToken: z.string().min(1, "validation.refreshTokenRequired"),
 });
 
 // ============================ registerSchema ============================
 export const registerSchema = z.object({
   name: z
     .string()
-    .min(3, "Name must be at least 3 characters")
-    .max(50, "Name must be at most 50 characters")
+    .min(3, "validation.nameMin")
+    .max(50, "validation.nameMax")
     .trim(),
   age: z.number().min(18).max(200).optional(),
   gender: z.enum(Object.values(Gender)).optional(),
   phone: z
     .string()
-    .min(8, "Phone must be at least 8 characters")
-    .max(20, "Phone must be at most 20 characters")
+    .min(8, "validation.phoneMin")
+    .max(20, "validation.phoneMax")
     .trim(),
-  email: z.email("Invalid email format").toLowerCase().trim(),
+  email: z.email("validation.emailInvalid").toLowerCase().trim(),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(128, "Password must be at most 128 characters"),
+    .min(8, "validation.passwordMin")
+    .max(128, "validation.passwordMax"),
 });
 
 // ============================ verifyEmailSchema ============================
 export const verifyEmailSchema = z.object({
-  email: z.email("Invalid email format").toLowerCase().trim(),
-  code: z.string().min(4, "Code must be at least 4 characters").trim(),
+  email: z.email("validation.emailInvalid").toLowerCase().trim(),
+  code: z.string().min(4, "validation.codeMin").trim(),
 });
 
 // ============================ emailSchema ============================
 export const emailSchema = z.object({
-  email: z.email("Invalid email format").toLowerCase().trim(),
+  email: z.email("validation.emailInvalid").toLowerCase().trim(),
 });
 
 // ============================ loginSchema ============================
 export const loginSchema = z.object({
-  email: z.email("Invalid email format").toLowerCase().trim(),
-  password: z.string().min(1, "Password is required"),
+  email: z.email("validation.emailInvalid").toLowerCase().trim(),
+  password: z.string().min(1, "validation.passwordRequired"),
 });
 
 // ============================ resetPasswordSchema ============================
 export const resetPasswordSchema = z.object({
-  email: z.email("Invalid email format").toLowerCase().trim(),
-  code: z.string().min(4, "Code must be at least 4 characters").trim(),
+  email: z.email("validation.emailInvalid").toLowerCase().trim(),
+  code: z.string().min(4, "validation.codeMin").trim(),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .max(128, "Password must be at most 128 characters"),
+    .min(8, "validation.passwordMin")
+    .max(128, "validation.passwordMax"),
 });
 
 // ============================ changePasswordSchema ============================
 export const changePasswordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password is required"),
+  currentPassword: z.string().min(1, "validation.currentPasswordRequired"),
   newPassword: z
     .string()
-    .min(8, "New password must be at least 8 characters")
-    .max(128, "New password must be at most 128 characters"),
+    .min(8, "validation.newPasswordMin")
+    .max(128, "validation.newPasswordMax"),
 });
 
 export type RegisterDTO = z.infer<typeof registerSchema>;

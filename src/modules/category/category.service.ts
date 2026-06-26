@@ -153,7 +153,7 @@ export class CategoryService {
       isActive: true,
     }).lean();
 
-    if (!category) throw new NotFoundError("Category");
+    if (!category) throw new NotFoundError("resource.category");
 
     // step: result
     return category;
@@ -166,7 +166,7 @@ export class CategoryService {
 
     // step: protect slug uniqueness
     const duplicate = await CategoryModel.exists({ slug: data.slug });
-    if (duplicate) throw new ConflictError("Category slug is already used");
+    if (duplicate) throw new ConflictError("category.slugAlreadyUsed");
 
     // step: validate parent category
     if (data.parentId) await validateCategoryParent(data.parentId);
@@ -204,12 +204,12 @@ export class CategoryService {
   ) {
     // step: require a body field or uploaded image
     if (Object.keys(data).length === 0 && !imageFile) {
-      throw new BadRequestError("At least one category field is required");
+      throw new BadRequestError("category.fieldsRequired");
     }
 
     // step: confirm category exists
     const existing = await CategoryModel.findById(id).lean();
-    if (!existing) throw new NotFoundError("Category");
+    if (!existing) throw new NotFoundError("resource.category");
 
     // step: normalize slug
     if (data.slug) {
@@ -222,7 +222,7 @@ export class CategoryService {
         _id: { $ne: id },
         slug: data.slug,
       });
-      if (duplicate) throw new ConflictError("Category slug is already used");
+      if (duplicate) throw new ConflictError("category.slugAlreadyUsed");
     }
 
     // step: validate parent category
@@ -272,7 +272,7 @@ export class CategoryService {
           () => undefined,
         );
       }
-      throw new NotFoundError("Category");
+      throw new NotFoundError("resource.category");
     }
 
     // step: remove the replaced Cloudinary image
@@ -295,7 +295,7 @@ export class CategoryService {
   async delete(id: string): Promise<void> {
     // step: confirm category exists
     const category = await CategoryModel.findById(id).lean();
-    if (!category) throw new NotFoundError("Category");
+    if (!category) throw new NotFoundError("resource.category");
 
     // step: protect descendants and products
     const [relatedChild, relatedProduct] = await Promise.all([
@@ -304,15 +304,15 @@ export class CategoryService {
     ]);
 
     if (relatedChild) {
-      throw new ConflictError("Delete child categories first");
+      throw new ConflictError("category.childDeleteFirst");
     }
     if (relatedProduct) {
-      throw new ConflictError("Category is used by products and cannot be deleted");
+      throw new ConflictError("category.deleteConflict");
     }
 
     // step: permanently delete category
     const deletedCategory = await CategoryModel.findByIdAndDelete(id).lean();
-    if (!deletedCategory) throw new NotFoundError("Category");
+    if (!deletedCategory) throw new NotFoundError("resource.category");
 
     // step: remove category image from Cloudinary
     const imagePublicId = deletedCategory.image

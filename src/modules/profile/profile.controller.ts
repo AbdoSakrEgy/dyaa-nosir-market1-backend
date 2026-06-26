@@ -17,7 +17,7 @@ export class ProfileController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Profile retrieved successfully",
+      "profile.retrieved",
       profile,
     );
   }
@@ -34,7 +34,7 @@ export class ProfileController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Profile updated successfully",
+      "profile.updated",
       profile,
     );
   }
@@ -46,7 +46,7 @@ export class ProfileController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Profiles retrieved successfully",
+      "profile.list",
       profiles,
       meta,
     );
@@ -60,7 +60,7 @@ export class ProfileController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Profile retrieved successfully",
+      "profile.retrieved",
       profile,
     );
   }
@@ -77,7 +77,7 @@ export class ProfileController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Profile status updated successfully",
+      "profile.statusUpdated",
       profile,
     );
   }

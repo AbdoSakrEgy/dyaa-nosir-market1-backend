@@ -20,7 +20,7 @@ export class InquiryController {
     responseHandler(
       res,
       HttpStatusCode.CREATED,
-      "Inquiry submitted successfully",
+      "inquiry.created",
       inquiry,
     );
   }
@@ -33,7 +33,7 @@ export class InquiryController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Inquiries retrieved successfully",
+      "inquiry.list",
       inquiries,
       meta,
     );
@@ -45,7 +45,7 @@ export class InquiryController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Inquiry retrieved successfully",
+      "inquiry.retrieved",
       inquiry,
     );
   }
@@ -59,7 +59,7 @@ export class InquiryController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Inquiry updated successfully",
+      "inquiry.updated",
       inquiry,
     );
   }

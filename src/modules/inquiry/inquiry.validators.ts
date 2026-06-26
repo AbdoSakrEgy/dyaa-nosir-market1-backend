@@ -6,14 +6,14 @@ export const createInquirySchema = z
   .object({
     customerName: z.string().min(2).max(100).trim(),
     phone: z.string().min(8).max(20).trim(),
-    email: z.email("Invalid email format").toLowerCase().trim().optional(),
+    email: z.email("validation.emailInvalid").toLowerCase().trim().optional(),
     productId: z.string().regex(/^[0-9a-fA-F]{24}$/).optional(),
     type: z.enum(Object.values(InquiryType)),
     message: z.string().min(5).max(3000).trim().optional(),
   })
   .refine((data) => data.type !== InquiryType.contact || Boolean(data.message), {
     path: ["message"],
-    message: "Message is required for a general contact inquiry",
+    message: "inquiry.messageRequiredForContact",
   });
 
 // ============================ updateInquirySchema ============================
@@ -23,12 +23,12 @@ export const updateInquirySchema = z
     adminNotes: z.string().max(3000).trim().nullable().optional(),
   })
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
-    message: "At least one inquiry field is required",
+    message: "inquiry.fieldsRequired",
   });
 
 // ============================ inquiryIdParamSchema ============================
 export const inquiryIdParamSchema = z.object({
-  id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid inquiry ID"),
+  id: z.string().regex(/^[0-9a-fA-F]{24}$/, "validation.invalidInquiryId"),
 });
 
 // ============================ listInquiriesQuerySchema ============================

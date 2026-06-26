@@ -42,7 +42,7 @@ export const categoryIdentifierParamSchema = z.object({
 
 // ============================ categoryIdParamSchema ============================
 export const categoryIdParamSchema = z.object({
-  id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid category ID"),
+  id: z.string().regex(/^[0-9a-fA-F]{24}$/, "validation.invalidCategoryId"),
 });
 
 // ============================ listCategoriesQuerySchema ============================

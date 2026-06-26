@@ -45,15 +45,15 @@ export class AuthService {
     ]);
 
     if (userByGoogleId) {
-      throw new ConflictError("Google account is already registered");
+      throw new ConflictError("auth.googleAccountAlreadyRegistered");
     }
 
     if (userByEmail) {
-      throw new ConflictError("An account already exists with this email");
+      throw new ConflictError("auth.emailAlreadyExists");
     }
 
     if (userByPhone) {
-      throw new ConflictError("This phone number is already used");
+      throw new ConflictError("auth.phoneAlreadyUsed");
     }
 
     // step: create customer role account
@@ -62,7 +62,7 @@ export class AuthService {
       isActive: true,
     });
     if (!customerRole)
-      throw new BadRequestError("Customer role is not configured");
+      throw new BadRequestError("auth.customerRoleNotConfigured");
 
     const user = await UserModel.create({
       name: googleUser.name,
@@ -101,7 +101,7 @@ export class AuthService {
       isActive: true,
     });
 
-    if (!user) throw new UnauthorizedError("Google account is not registered");
+    if (!user) throw new UnauthorizedError("auth.googleNotRegistered");
 
     // step: create auth session
     const tokens = await createSession(String(user._id), String(user.roleId));
@@ -136,7 +136,7 @@ export class AuthService {
       { new: true },
     );
 
-    if (!revokedToken) throw new UnauthorizedError("Invalid refresh token");
+    if (!revokedToken) throw new UnauthorizedError("auth.invalidRefreshToken");
 
     // step: create new auth session
     return createSession(oldPayload.userId, oldPayload.roleId);
@@ -151,7 +151,7 @@ export class AuthService {
       expiresAt: { $gt: new Date() },
     });
 
-    if (!storedToken) throw new UnauthorizedError("Invalid refresh token");
+    if (!storedToken) throw new UnauthorizedError("auth.invalidRefreshToken");
 
     // step: revoke refresh token
     storedToken.revokedAt = new Date();
@@ -162,7 +162,7 @@ export class AuthService {
   async me(userId: string) {
     // step: find active user
     const user = await UserModel.findById(userId).lean({ getters: true });
-    if (!user || !user.isActive) throw new NotFoundError("User");
+    if (!user || !user.isActive) throw new NotFoundError("resource.user");
 
     // step: result
     return {
@@ -184,9 +184,9 @@ export class AuthService {
       UserModel.findOne({ phone: normalizedPhone }),
     ]);
 
-    if (userByEmail) throw new ConflictError("Email already registered");
+    if (userByEmail) throw new ConflictError("auth.emailAlreadyRegistered");
     if (userByPhone) {
-      throw new ConflictError("This phone number is already used");
+      throw new ConflictError("auth.phoneAlreadyUsed");
     }
 
     // step: check customer role
@@ -195,7 +195,7 @@ export class AuthService {
       isActive: true,
     });
     if (!customerRole)
-      throw new BadRequestError("Customer role is not configured");
+      throw new BadRequestError("auth.customerRoleNotConfigured");
 
     // step: generate otp code
     const verificationCode = generateOtp(6);
@@ -250,7 +250,7 @@ export class AuthService {
     );
 
     // step: check user and email status
-    if (!user) throw new NotFoundError("User");
+    if (!user) throw new NotFoundError("resource.user");
     if (user.isEmailConfirmed) return;
 
     // step: validate otp code
@@ -261,7 +261,7 @@ export class AuthService {
       user.emailOtp?.otp && (await compareData(data.code, user.emailOtp.otp));
 
     if (isExpired || !isValid)
-      throw new BadRequestError("Invalid or expired code");
+      throw new BadRequestError("auth.invalidOrExpiredCode");
 
     // step: confirm email
     user.isEmailConfirmed = true;
@@ -277,9 +277,9 @@ export class AuthService {
     );
 
     // step: check user and email status
-    if (!user) throw new NotFoundError("User");
+    if (!user) throw new NotFoundError("resource.user");
     if (user.isEmailConfirmed)
-      throw new BadRequestError("Email is already verified");
+      throw new BadRequestError("auth.emailAlreadyVerified");
 
     // step: generate and save new otp code
     const code = generateOtp(6);
@@ -303,7 +303,7 @@ export class AuthService {
     // step: report delivery failure so the customer can retry
     if (!isEmailSent) {
       throw new ServiceUnavailableError(
-        "Unable to send verification email — please try again later",
+        "auth.verificationEmailSendFailed",
       );
     }
   }
@@ -319,7 +319,7 @@ export class AuthService {
 
     // step: validate password
     if (!user?.password || !(await compareData(data.password, user.password))) {
-      throw new UnauthorizedError("Invalid email or password");
+      throw new UnauthorizedError("auth.invalidCredentials");
     }
 
     // step: create auth session
@@ -384,7 +384,7 @@ export class AuthService {
     }).select("+passwordOtp.otp +passwordOtp.expiresAt");
 
     // step: check user
-    if (!user) throw new BadRequestError("Invalid or expired code");
+    if (!user) throw new BadRequestError("auth.invalidOrExpiredCode");
 
     // step: validate otp code
     const isExpired =
@@ -395,7 +395,7 @@ export class AuthService {
       (await compareData(data.code, user.passwordOtp.otp));
 
     if (isExpired || !isValid)
-      throw new BadRequestError("Invalid or expired code");
+      throw new BadRequestError("auth.invalidOrExpiredCode");
 
     // step: update password
     user.password = await hashData(data.password);
@@ -419,12 +419,12 @@ export class AuthService {
     }).select("+password");
 
     // step: validate current password
-    if (!user || !user.isActive) throw new NotFoundError("User");
+    if (!user || !user.isActive) throw new NotFoundError("resource.user");
     if (
       !user.password ||
       !(await compareData(data.currentPassword, user.password))
     ) {
-      throw new UnauthorizedError("Current password is incorrect");
+      throw new UnauthorizedError("auth.currentPasswordIncorrect");
     }
 
     // step: update password

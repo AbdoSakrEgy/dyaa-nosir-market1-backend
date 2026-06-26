@@ -29,7 +29,7 @@ export class ProfileService {
       .populate("roleId", "name slug")
       .lean();
 
-    if (!profile) throw new NotFoundError("Profile");
+    if (!profile) throw new NotFoundError("resource.profile");
 
     // step: result
     return profile;
@@ -43,7 +43,7 @@ export class ProfileService {
   ) {
     // step: require a body field or uploaded profile image
     if (Object.keys(data).length === 0 && !profileImageFile) {
-      throw new BadRequestError("At least one profile field is required");
+      throw new BadRequestError("profile.fieldsRequired");
     }
 
     // step: retrieve the current active profile
@@ -51,7 +51,7 @@ export class ProfileService {
       _id: userId,
       isActive: true,
     }).lean();
-    if (!existing) throw new NotFoundError("Profile");
+    if (!existing) throw new NotFoundError("resource.profile");
 
     // step: protect phone ownership
     if (data.phone) {
@@ -61,7 +61,7 @@ export class ProfileService {
         _id: { $ne: userId },
       });
 
-      if (owner) throw new ConflictError("Phone number is already used");
+      if (owner) throw new ConflictError("profile.phoneAlreadyUsed");
       data.phone = normalizedPhone;
     }
 
@@ -107,7 +107,7 @@ export class ProfileService {
           () => undefined,
         );
       }
-      throw new NotFoundError("Profile");
+      throw new NotFoundError("resource.profile");
     }
 
     // step: remove the replaced Cloudinary profile image
@@ -191,7 +191,7 @@ export class ProfileService {
       .populate("roleId", "name slug")
       .lean();
 
-    if (!profile) throw new NotFoundError("Profile");
+    if (!profile) throw new NotFoundError("resource.profile");
 
     // step: result
     return profile;
@@ -201,7 +201,7 @@ export class ProfileService {
   async updateProfileStatus(id: string, isActive: boolean, actorId: string) {
     // step: prevent self-deactivation
     if (id === actorId && !isActive) {
-      throw new BadRequestError("You cannot deactivate your own account");
+      throw new BadRequestError("profile.selfDeactivateForbidden");
     }
 
     // step: update account status
@@ -214,7 +214,7 @@ export class ProfileService {
       .populate("roleId", "name slug")
       .lean();
 
-    if (!profile) throw new NotFoundError("Profile");
+    if (!profile) throw new NotFoundError("resource.profile");
 
     // step: revoke sessions for a deactivated account
     if (!isActive) {

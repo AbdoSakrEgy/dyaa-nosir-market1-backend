@@ -1,8 +1,10 @@
 import type { Request, Response, NextFunction } from "express";
+import type { ZodIssue } from "zod";
 import { AppError } from "../shared/utils/error/app.error.js";
 import { HttpStatusCode } from "../shared/utils/response/http.status.code.js";
 import { logger } from "../config/logger.js";
 import { env } from "../config/env.js";
+import { getResponseLocale, t } from "../shared/i18n/i18n.js";
 
 /**
  * Global error handling middleware — the single place where all errors are caught and formatted.
@@ -20,6 +22,8 @@ export const handleGlobalError = (
   res: Response,
   next: NextFunction,
 ): void => {
+  const locale = getResponseLocale(res);
+
   // Handle operational Errors
   if (err instanceof AppError) {
     logger.warn(
@@ -29,7 +33,7 @@ export const handleGlobalError = (
 
     res.status(err.statusCode).json({
       success: false,
-      message: err.message,
+      message: t(locale, err.message, err.messageParams),
       ...(env.isDevelopment && { stack: err.stack }),
     });
     return;
@@ -37,16 +41,15 @@ export const handleGlobalError = (
 
   // Handle Zod validation Errors
   if (err.name === "ZodError" && "issues" in err) {
-    type ZodIssue = { path: (string | number)[]; message: string };
     const zodErr = err as unknown as { issues: ZodIssue[] };
     const errors = zodErr.issues.map((issue) => ({
       field: issue.path.join("."),
-      message: issue.message,
+      message: t(locale, issue.message),
     }));
 
     res.status(HttpStatusCode.UNPROCESSABLE_ENTITY).json({
       success: false,
-      message: "Validation failed",
+      message: t(locale, "validation.failed"),
       errors,
     });
     return;
@@ -55,11 +58,11 @@ export const handleGlobalError = (
   // Handle JWT Errors
   if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError") {
     const message =
-      err.name === "TokenExpiredError" ? "Token has expired" : "Invalid token";
+      err.name === "TokenExpiredError" ? "error.tokenExpired" : "error.invalidToken";
 
     res.status(HttpStatusCode.UNAUTHORIZED).json({
       success: false,
-      message,
+      message: t(locale, message),
     });
     return;
   }
@@ -69,7 +72,7 @@ export const handleGlobalError = (
 
   res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
     success: false,
-    message: "Internal server error",
+    message: t(locale, "error.internal"),
     ...(env.isDevelopment && { stack: err.stack }),
   });
 };

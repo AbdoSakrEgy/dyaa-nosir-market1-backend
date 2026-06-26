@@ -23,23 +23,17 @@ export const authorize = (...allowedRoles: UserRole[]) => {
       const payload = (req as any).payload as AuthPayload;
 
       if (!payload?.roleId) {
-        throw new ForbiddenError(
-          "Authentication required before authorization",
-        );
+        throw new ForbiddenError("authorization.required");
       }
 
       const role = await RoleModel.findById(payload.roleId).lean();
 
       if (!role?.isActive) {
-        throw new ForbiddenError(
-          "Role is not authorized to access this resource",
-        );
+        throw new ForbiddenError("authorization.roleInactive");
       }
 
       if (!allowedRoles.includes(role.slug)) {
-        throw new ForbiddenError(
-          `Role '${role.slug}' is not authorized to access this resource`,
-        );
+        throw new ForbiddenError("auth.roleNotAuthorized", { role: role.slug });
       }
 
       next();

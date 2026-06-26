@@ -11,12 +11,12 @@ export const decodeToken = ({
   tokenType?: TokenTypesEnum;
 }) => {
   if (!authorization?.startsWith("Bearer ")) {
-    throw new UnauthorizedError("Missing or malformed authorization header");
+    throw new UnauthorizedError("auth.missingAuthorizationHeader");
   }
 
   const token = authorization.split(" ")[1];
   if (!token) {
-    throw new UnauthorizedError("Token not provided");
+    throw new UnauthorizedError("auth.tokenNotProvided");
   }
 
   let privateKey = "";

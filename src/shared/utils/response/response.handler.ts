@@ -1,6 +1,8 @@
 import type { Response } from "express";
 import type { ApiResponse, PaginationMeta } from "../../types/shared.types.js";
 import { HttpStatusCode } from "./http.status.code.js";
+import { getResponseLocale, t } from "../../i18n/i18n.js";
+import { TranslationParams } from "../../i18n/i18n.types.js";
 
 /**
  * Consistent API response helper.
@@ -12,10 +14,12 @@ export const responseHandler = <T>(
   message: string,
   data?: T,
   meta?: PaginationMeta,
+  messageParams?: TranslationParams,
 ): void => {
+  const locale = getResponseLocale(res);
   const body: ApiResponse<T> = {
     success: statusCode >= 200 && statusCode < 300,
-    message,
+    message: t(locale, message, messageParams),
     ...(meta !== undefined && { meta }),
     ...(data !== undefined && { data }),
   };

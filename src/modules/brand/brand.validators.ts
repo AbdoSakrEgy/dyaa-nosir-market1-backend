@@ -37,7 +37,7 @@ export const brandIdentifierParamSchema = z.object({
 
 // ============================ brandIdParamSchema ============================
 export const brandIdParamSchema = z.object({
-  id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid brand ID"),
+  id: z.string().regex(/^[0-9a-fA-F]{24}$/, "validation.invalidBrandId"),
 });
 
 // ============================ listBrandsQuerySchema ============================

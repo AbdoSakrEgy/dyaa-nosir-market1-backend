@@ -8,6 +8,7 @@ import { limitRequests } from "./middlewares/limit.requests.js";
 import { logRequests } from "./middlewares/log.requests.js";
 import { handleGlobalError } from "./middlewares/handle.global.error.js";
 import { handleRouteNotFound } from "./middlewares/handle.route.not.found.js";
+import { setLocale } from "./middlewares/locale.js";
 
 // Routes
 import healthRoutes from "./modules/health/health.route.js";
@@ -41,13 +42,14 @@ app.use(
       "https://yourdomain.com",
     ],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Accept-Language"],
     credentials: true,
     maxAge: 86400, // Cache preflight for 24 hours
   }),
 );
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(setLocale);
 app.use(limitRequests);
 app.use(logRequests);
 

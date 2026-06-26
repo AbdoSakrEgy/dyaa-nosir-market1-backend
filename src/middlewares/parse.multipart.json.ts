@@ -26,7 +26,7 @@ export const parseMultipartJson = (
         parsedValue === null ||
         Array.isArray(parsedValue)
       ) {
-        throw new BadRequestError("Multipart data must be a JSON object");
+        throw new BadRequestError("multipart.mustBeObject");
       }
       parsedData = parsedValue as Record<string, unknown>;
     }
@@ -43,7 +43,7 @@ export const parseMultipartJson = (
     next(
       error instanceof BadRequestError
         ? error
-        : new BadRequestError("Multipart data must contain valid JSON"),
+        : new BadRequestError("multipart.invalidJson"),
     );
   }
 };
@@ -67,7 +67,8 @@ const parseFieldValue = (field: string, value: unknown): unknown => {
       return JSON.parse(trimmedValue) as unknown;
     } catch {
       throw new BadRequestError(
-        `Multipart field '${field}' must contain valid JSON`,
+        "multipart.fieldInvalidJson",
+        { field },
       );
     }
   }

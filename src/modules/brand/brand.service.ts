@@ -136,7 +136,7 @@ export class BrandService {
       isActive: true,
     }).lean();
 
-    if (!brand) throw new NotFoundError("Brand");
+    if (!brand) throw new NotFoundError("resource.brand");
 
     // step: result
     return brand;
@@ -146,7 +146,7 @@ export class BrandService {
   async create(data: CreateBrandDTO, logoFile?: Express.Multer.File) {
     // step: protect slug uniqueness
     const duplicate = await BrandModel.exists({ slug: data.slug });
-    if (duplicate) throw new ConflictError("Brand slug is already used");
+    if (duplicate) throw new ConflictError("brand.slugAlreadyUsed");
 
     // step: upload the supplied logo
     const brandData: Record<string, unknown> = { ...data };
@@ -181,12 +181,12 @@ export class BrandService {
   ) {
     // step: require a body field or uploaded logo
     if (Object.keys(data).length === 0 && !logoFile) {
-      throw new BadRequestError("At least one brand field is required");
+      throw new BadRequestError("brand.fieldsRequired");
     }
 
     // step: confirm brand exists
     const existing = await BrandModel.findById(id).lean();
-    if (!existing) throw new NotFoundError("Brand");
+    if (!existing) throw new NotFoundError("resource.brand");
 
     // step: protect slug uniqueness
     if (data.slug) {
@@ -194,7 +194,7 @@ export class BrandService {
         slug: data.slug,
         _id: { $ne: id },
       });
-      if (duplicate) throw new ConflictError("Brand slug is already used");
+      if (duplicate) throw new ConflictError("brand.slugAlreadyUsed");
     }
 
     // step: upload the supplied logo
@@ -238,7 +238,7 @@ export class BrandService {
           () => undefined,
         );
       }
-      throw new NotFoundError("Brand");
+      throw new NotFoundError("resource.brand");
     }
 
     // step: remove the replaced Cloudinary logo
@@ -261,19 +261,19 @@ export class BrandService {
   async delete(id: string) {
     // step: confirm brand exists
     const brand = await BrandModel.findById(id).lean();
-    if (!brand) throw new NotFoundError("Brand");
+    if (!brand) throw new NotFoundError("resource.brand");
 
     // step: protect all products that reference the brand
     const relatedProduct = await ProductModel.exists({
       brandId: id,
     });
     if (relatedProduct) {
-      throw new ConflictError("Brand is used by products and cannot be deleted");
+      throw new ConflictError("brand.deleteConflict");
     }
 
     // step: permanently delete brand
     const deletedBrand = await BrandModel.findByIdAndDelete(id).lean();
-    if (!deletedBrand) throw new NotFoundError("Brand");
+    if (!deletedBrand) throw new NotFoundError("resource.brand");
 
     // step: remove the brand logo from Cloudinary
     const logoPublicId = deletedBrand.logo

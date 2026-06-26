@@ -26,6 +26,21 @@ export const env = {
   // ======================== database.ts ========================
   DATABASE_URL: process.env["DATABASE_URL"] ?? "",
 
+  // ======================== send.email.ts ========================
+  NODEMAILER_HOST: process.env["NODEMAILER_HOST"] ?? "",
+  NODEMAILER_PORT: parseInt(process.env["NODEMAILER_PORT"] ?? "587", 10),
+  NODEMAILER_SENDER_EMAIL: process.env["NODEMAILER_SENDER_EMAIL"] ?? "",
+  NODEMAILER_SENDER_EMAIL_GOOGLE_APP_PASSWORD:
+    process.env["NODEMAILER_SENDER_EMAIL_GOOGLE_APP_PASSWORD"] ?? "",
+
+  // ======================== cloudinary.config.ts.ts ========================
+  CLOUDINARY_CLOUD_NAME: process.env["CLOUDINARY_CLOUD_NAME"] ?? "",
+  CLOUDINARY_API_KEY: process.env["CLOUDINARY_API_KEY"] ?? "",
+  CLOUDINARY_API_SECRET: process.env["CLOUDINARY_API_SECRET"] ?? "",
+
+  // ======================== verify-google-token.ts ========================
+  GOOGLE_WEB_CLIENT_ID: process.env["GOOGLE_WEB_CLIENT_ID"] ?? "",
+
   // ======================== jwt.ts / decode.token.ts ========================
   JWT_ACCESS_SECRET: process.env["JWT_ACCESS_SECRET"] ?? "",
   JWT_REFRESH_SECRET: process.env["JWT_REFRESH_SECRET"] ?? "",
@@ -38,29 +53,11 @@ export const env = {
   // ======================== bcrypt.ts ========================
   BCRYPT_SALT: process.env["SALT"] ?? "",
 
-  // ======================== send.email.ts ========================
-  NODEMAILER_HOST: process.env["NODEMAILER_HOST"] ?? "",
-  NODEMAILER_PORT: parseInt(process.env["NODEMAILER_PORT"] ?? "587", 10),
-  NODEMAILER_SENDER_EMAIL: process.env["NODEMAILER_SENDER_EMAIL"] ?? "",
-  NODEMAILER_SENDER_EMAIL_GOOGLE_APP_PASSWORD:
-    process.env["NODEMAILER_SENDER_EMAIL_GOOGLE_APP_PASSWORD"] ?? "",
-
   // ======================== multer.upload.ts ========================
   MULTER_MAX_FILE_SIZE_MB: parseInt(
     process.env["MAX_FILE_SIZE_MB"] ?? "10",
     10,
   ),
-
-  // ======================== cloudinary.config.ts.ts ========================
-  CLOUDINARY_CLOUD_NAME: process.env["CLOUDINARY_CLOUD_NAME"] ?? "",
-  CLOUDINARY_API_KEY: process.env["CLOUDINARY_API_KEY"] ?? "",
-  CLOUDINARY_API_SECRET: process.env["CLOUDINARY_API_SECRET"] ?? "",
-
-  // AWS
-  AWS_ACCESS_KEY_ID: process.env["AWS_ACCESS_KEY_ID"] ?? "",
-  AWS_SECRET_ACCESS_KEY: process.env["AWS_SECRET_ACCESS_KEY"] ?? "",
-  AWS_REGION: process.env["AWS_REGION"] ?? "us-east-1",
-  AWS_S3_BUCKET: process.env["AWS_S3_BUCKET"] ?? "",
 
   // stripe.ts / stipe.service.ts
   STRIPE_SECRET_KEY: process.env["STRIPE_SECRET_KEY"] ?? "",
@@ -86,7 +83,4 @@ export const env = {
 
   // Redis
   REDIS_URL: process.env["REDIS_URL"] ?? "",
-
-  // ======================== verify-google-token.ts ========================
-  GOOGLE_WEB_CLIENT_ID: process.env["GOOGLE_WEB_CLIENT_ID"] ?? "",
 } as const;

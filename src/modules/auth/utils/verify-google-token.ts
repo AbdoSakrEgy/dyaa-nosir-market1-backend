@@ -9,7 +9,7 @@ const googleClient = new OAuth2Client(env.GOOGLE_WEB_CLIENT_ID);
 
 export async function verifyGoogleToken(googleToken: string) {
   if (!env.GOOGLE_WEB_CLIENT_ID) {
-    throw new BadRequestError("Google login is not configured");
+    throw new BadRequestError("auth.googleLoginNotConfigured");
   }
 
   let ticket;
@@ -20,13 +20,13 @@ export async function verifyGoogleToken(googleToken: string) {
       audience: env.GOOGLE_WEB_CLIENT_ID,
     });
   } catch {
-    throw new UnauthorizedError("Invalid or expired Google token");
+    throw new UnauthorizedError("auth.invalidOrExpiredGoogleToken");
   }
 
   const payload = ticket.getPayload();
 
   if (!payload?.sub || !payload.email || !payload.email_verified) {
-    throw new UnauthorizedError("Invalid Google token");
+    throw new UnauthorizedError("auth.invalidGoogleToken");
   }
 
   return {

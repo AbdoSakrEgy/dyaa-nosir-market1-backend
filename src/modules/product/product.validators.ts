@@ -62,7 +62,7 @@ export const createProductSchema = z
       data.discountPrice === undefined || data.discountPrice <= data.price,
     {
       path: ["discountPrice"],
-      message: "Discount price cannot exceed the regular price",
+      message: "product.discountPriceTooHigh",
     },
   );
 
@@ -96,7 +96,7 @@ export const productIdentifierParamSchema = z.object({
 
 // ============================ productIdParamSchema ============================
 export const productIdParamSchema = z.object({
-  id: z.string().regex(/^[0-9a-fA-F]{24}$/, "Invalid product ID"),
+  id: z.string().regex(/^[0-9a-fA-F]{24}$/, "validation.invalidProductId"),
 });
 
 // ============================ listProductsQuerySchema ============================

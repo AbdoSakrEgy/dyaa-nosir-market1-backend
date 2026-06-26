@@ -180,7 +180,7 @@ export class ProductService {
       .populate("brandId", "name slug")
       .lean();
 
-    if (!product) throw new NotFoundError("Product");
+    if (!product) throw new NotFoundError("resource.product");
 
     // step: result
     return product;
@@ -193,8 +193,8 @@ export class ProductService {
       ProductModel.exists({ slug: data.slug }),
       ProductModel.exists({ sku: data.sku }),
     ]);
-    if (slugOwner) throw new ConflictError("Product slug is already used");
-    if (skuOwner) throw new ConflictError("Product SKU is already used");
+    if (slugOwner) throw new ConflictError("product.slugAlreadyUsed");
+    if (skuOwner) throw new ConflictError("product.skuAlreadyUsed");
 
     // step: validate catalog relations
     await validateProductRelations(data.categoryId, data.brandId);
@@ -248,12 +248,12 @@ export class ProductService {
   ) {
     // step: require a body field or uploaded images
     if (Object.keys(data).length === 0 && !imageFiles?.length) {
-      throw new BadRequestError("At least one product field is required");
+      throw new BadRequestError("product.fieldsRequired");
     }
 
     // step: retrieve existing product
     const existing = await ProductModel.findById(id).lean();
-    if (!existing) throw new NotFoundError("Product");
+    if (!existing) throw new NotFoundError("resource.product");
 
     // step: protect slug and SKU uniqueness
     const [slugOwner, skuOwner] = await Promise.all([
@@ -264,8 +264,8 @@ export class ProductService {
         ? ProductModel.exists({ sku: data.sku, _id: { $ne: id } })
         : Promise.resolve(false),
     ]);
-    if (slugOwner) throw new ConflictError("Product slug is already used");
-    if (skuOwner) throw new ConflictError("Product SKU is already used");
+    if (slugOwner) throw new ConflictError("product.slugAlreadyUsed");
+    if (skuOwner) throw new ConflictError("product.skuAlreadyUsed");
 
     // step: validate changed catalog relations
     await validateProductRelations(data.categoryId, data.brandId);
@@ -331,7 +331,7 @@ export class ProductService {
           () => undefined,
         );
       }
-      throw new NotFoundError("Product");
+      throw new NotFoundError("resource.product");
     }
 
     // step: remove replaced Cloudinary images
@@ -358,7 +358,7 @@ export class ProductService {
       { $set: { isActive: false, isPublished: false } },
     );
 
-    if (!product) throw new NotFoundError("Product");
+    if (!product) throw new NotFoundError("resource.product");
   }
 }
 

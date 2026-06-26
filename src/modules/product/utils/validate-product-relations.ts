@@ -15,6 +15,6 @@ export async function validateProductRelations(
       : Promise.resolve(true),
   ]);
 
-  if (!category) throw new NotFoundError("Active category");
-  if (!brand) throw new NotFoundError("Active brand");
+  if (!category) throw new NotFoundError("resource.activeCategory");
+  if (!brand) throw new NotFoundError("resource.activeBrand");
 }

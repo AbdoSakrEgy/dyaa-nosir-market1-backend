@@ -18,7 +18,7 @@ export class ProductController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Products retrieved successfully",
+      "product.list",
       products,
       meta,
     );
@@ -32,7 +32,7 @@ export class ProductController {
     responseHandler(
       res,
       HttpStatusCode.OK,
-      "Products retrieved successfully",
+      "product.list",
       products,
       meta,
     );
@@ -43,7 +43,7 @@ export class ProductController {
     const product = await productService.getByIdentifier(
       req.params["identifier"] as string,
     );
-    responseHandler(res, HttpStatusCode.OK, "Product retrieved successfully", product);
+    responseHandler(res, HttpStatusCode.OK, "product.retrieved", product);
   }
 
   // ---------------------------- create ----------------------------
@@ -52,7 +52,7 @@ export class ProductController {
       req.body as CreateProductDTO,
       req.files as Express.Multer.File[] | undefined,
     );
-    responseHandler(res, HttpStatusCode.CREATED, "Product created successfully", product);
+    responseHandler(res, HttpStatusCode.CREATED, "product.created", product);
   }
 
   // ---------------------------- update ----------------------------
@@ -62,13 +62,13 @@ export class ProductController {
       req.body as UpdateProductDTO,
       req.files as Express.Multer.File[] | undefined,
     );
-    responseHandler(res, HttpStatusCode.OK, "Product updated successfully", product);
+    responseHandler(res, HttpStatusCode.OK, "product.updated", product);
   }
 
   // ---------------------------- delete ----------------------------
   async delete(req: Request, res: Response): Promise<void> {
     await productService.delete(req.params["id"] as string);
-    responseHandler(res, HttpStatusCode.OK, "Product archived successfully");
+    responseHandler(res, HttpStatusCode.OK, "product.archived");
   }
 }
 

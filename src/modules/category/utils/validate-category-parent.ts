@@ -9,18 +9,20 @@ export async function validateCategoryParent(
   categoryId?: string,
 ): Promise<void> {
   if (categoryId && parentId === categoryId) {
-    throw new BadRequestError("A category cannot be its own parent");
+    throw new BadRequestError("category.parentSelf");
   }
 
   let current = await CategoryModel.findById(parentId)
     .select("parentId isActive")
     .lean();
 
-  if (!current || !current.isActive) throw new NotFoundError("Parent category");
+  if (!current || !current.isActive) {
+    throw new NotFoundError("resource.parentCategory");
+  }
 
   while (current?.parentId) {
     if (categoryId && String(current.parentId) === categoryId) {
-      throw new BadRequestError("Category hierarchy cannot contain a cycle");
+      throw new BadRequestError("category.hierarchyCycle");
     }
 
     current = await CategoryModel.findById(current.parentId)

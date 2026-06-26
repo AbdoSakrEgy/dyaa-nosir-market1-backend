@@ -20,7 +20,7 @@ export class InquiryService {
         isPublished: true,
         isActive: true,
       });
-      if (!product) throw new NotFoundError("Product");
+      if (!product) throw new NotFoundError("resource.product");
     }
 
     // step: create inquiry with normalized contact data
@@ -97,7 +97,7 @@ export class InquiryService {
       .populate("userId", "name email phone")
       .lean();
 
-    if (!inquiry) throw new NotFoundError("Inquiry");
+    if (!inquiry) throw new NotFoundError("resource.inquiry");
 
     // step: result
     return inquiry;
@@ -119,7 +119,7 @@ export class InquiryService {
       { new: true, runValidators: true },
     );
 
-    if (!inquiry) throw new NotFoundError("Inquiry");
+    if (!inquiry) throw new NotFoundError("resource.inquiry");
 
     // step: result
     return inquiry;

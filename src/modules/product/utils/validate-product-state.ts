@@ -13,14 +13,14 @@ export function validateProductState({
   stockStatus: ProductStockStatus;
 }): void {
   if (discountPrice !== undefined && discountPrice !== null && discountPrice > price) {
-    throw new BadRequestError("Discount price cannot exceed the regular price");
+    throw new BadRequestError("product.discountPriceTooHigh");
   }
 
   if (stockStatus === ProductStockStatus.inStock && stockQuantity === 0) {
-    throw new BadRequestError("An in-stock product must have available quantity");
+    throw new BadRequestError("product.inStockQuantityRequired");
   }
 
   if (stockStatus === ProductStockStatus.outOfStock && stockQuantity > 0) {
-    throw new BadRequestError("An out-of-stock product cannot have available quantity");
+    throw new BadRequestError("product.outOfStockQuantityForbidden");
   }
 }

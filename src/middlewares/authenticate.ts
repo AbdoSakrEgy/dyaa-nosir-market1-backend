@@ -4,7 +4,7 @@ import { decodeToken } from "../shared/utils/decode.token.js";
 import { UnauthorizedError } from "../shared/utils/error/app.error.js";
 
 /**
- * Authentication middleware — verifies JWT from the Authorization header.
+ * Authentication middleware - verifies JWT from the Authorization header.
  *
  * Flow:
  * 1. Pass authorization header to decodeToken utility
@@ -28,15 +28,13 @@ export const authenticate = async (
       .select("isActive credentialsChangedAt")
       .lean();
     if (!user?.isActive) {
-      throw new UnauthorizedError("Account is inactive or no longer exists");
+      throw new UnauthorizedError("auth.inactiveAccount");
     }
     if (
       user.credentialsChangedAt &&
       payload.iat * 1000 < user.credentialsChangedAt.getTime()
     ) {
-      throw new UnauthorizedError(
-        "Credentials changed after this token was issued — please log in again",
-      );
+      throw new UnauthorizedError("auth.credentialsChanged");
     }
 
     (req as any).payload = payload;

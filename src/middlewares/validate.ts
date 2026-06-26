@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import type { ZodSchema } from "zod";
 import { HttpStatusCode } from "../shared/utils/response/http.status.code.js";
+import { getResponseLocale, t } from "../shared/i18n/i18n.js";
 
 /**
  * Request validation middleware factory using Zod.
@@ -26,6 +27,7 @@ interface ValidationSchemas {
 
 export const validate = (schemas: ValidationSchemas) => {
   return (req: Request, res: Response, next: NextFunction): void => {
+    const locale = getResponseLocale(res);
     const errors: Array<{ source: string; field: string; message: string }> =
       [];
 
@@ -48,7 +50,7 @@ export const validate = (schemas: ValidationSchemas) => {
           errors.push({
             source: name,
             field: fieldName,
-            message: issue.message,
+            message: t(locale, issue.message),
           });
         }
       } else if (name === "body") {
@@ -61,7 +63,7 @@ export const validate = (schemas: ValidationSchemas) => {
     if (errors.length > 0) {
       res.status(HttpStatusCode.UNPROCESSABLE_ENTITY).json({
         success: false,
-        message: "Validation failed",
+        message: t(locale, "validation.failed"),
         errors,
       });
       return;

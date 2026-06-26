@@ -1,3 +1,4 @@
+import type { TranslationParams } from "../../i18n/i18n.types.js";
 import { HttpStatusCode } from "../response/http.status.code.js";
 
 /**
@@ -15,15 +16,18 @@ import { HttpStatusCode } from "../response/http.status.code.js";
 export class AppError extends Error {
   public readonly statusCode: HttpStatusCode;
   public readonly isOperational: boolean;
+  public readonly messageParams: TranslationParams;
 
   constructor(
     message: string,
     statusCode: HttpStatusCode = HttpStatusCode.INTERNAL_SERVER_ERROR,
     isOperational = true,
+    messageParams: TranslationParams = {},
   ) {
     super(message);
     this.statusCode = statusCode;
     this.isOperational = isOperational;
+    this.messageParams = messageParams;
 
     // Maintain proper prototype chain
     Object.setPrototypeOf(this, new.target.prototype);
@@ -36,37 +40,40 @@ export class AppError extends Error {
 // ========================
 
 export class NotFoundError extends AppError {
-  constructor(resource = "Resource") {
-    super(`${resource} not found`, HttpStatusCode.NOT_FOUND);
+  constructor(resource = "resource.generic") {
+    super("error.notFound", HttpStatusCode.NOT_FOUND, true, { resource });
   }
 }
 
 export class UnauthorizedError extends AppError {
-  constructor(message = "Unauthorized") {
-    super(message, HttpStatusCode.UNAUTHORIZED);
+  constructor(message = "error.unauthorized", messageParams?: TranslationParams) {
+    super(message, HttpStatusCode.UNAUTHORIZED, true, messageParams);
   }
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message = "Forbidden — insufficient permissions") {
-    super(message, HttpStatusCode.FORBIDDEN);
+  constructor(message = "error.forbidden", messageParams?: TranslationParams) {
+    super(message, HttpStatusCode.FORBIDDEN, true, messageParams);
   }
 }
 
 export class BadRequestError extends AppError {
-  constructor(message = "Bad request") {
-    super(message, HttpStatusCode.BAD_REQUEST);
+  constructor(message = "error.badRequest", messageParams?: TranslationParams) {
+    super(message, HttpStatusCode.BAD_REQUEST, true, messageParams);
   }
 }
 
 export class ConflictError extends AppError {
-  constructor(message = "Resource already exists") {
-    super(message, HttpStatusCode.CONFLICT);
+  constructor(message = "error.conflict", messageParams?: TranslationParams) {
+    super(message, HttpStatusCode.CONFLICT, true, messageParams);
   }
 }
 
 export class ServiceUnavailableError extends AppError {
-  constructor(message = "Service temporarily unavailable") {
-    super(message, HttpStatusCode.SERVICE_UNAVAILABLE);
+  constructor(
+    message = "error.serviceUnavailable",
+    messageParams?: TranslationParams,
+  ) {
+    super(message, HttpStatusCode.SERVICE_UNAVAILABLE, true, messageParams);
   }
 }

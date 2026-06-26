@@ -40,12 +40,12 @@ export const multerUpload = ({
       storeIn == StoreInEnum.memory
     ) {
       return cb(
-        new AppError("Use disk not memory", HttpStatusCode.BAD_REQUEST),
+        new AppError("upload.useDiskStorage", HttpStatusCode.BAD_REQUEST),
         false,
       );
     } else if (!sendedFileType.includes(file.mimetype)) {
       return cb(
-        new AppError("Invalid file format", HttpStatusCode.BAD_REQUEST),
+        new AppError("upload.invalidFileFormat", HttpStatusCode.BAD_REQUEST),
         false,
       );
     }
