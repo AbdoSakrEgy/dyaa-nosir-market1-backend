@@ -28,10 +28,8 @@ const startServer = async (): Promise<void> => {
     // 2. Run all cron jobs
     sendReminderEmail();
     // 3. Start listening
-    server.listen(env.PORT, env.HOST, () => {
-      logger.info(
-        `🚀 Server running on ${env.HOST}:${env.PORT} [${env.NODE_ENV}]`,
-      );
+    server.listen(env.PORT, () => {
+      logger.info(`🚀 Server running on port ${env.PORT} [${env.NODE_ENV}]`);
       logger.info(
         `📍 Health check: http://localhost:${env.PORT}/api/v1/health`,
       );

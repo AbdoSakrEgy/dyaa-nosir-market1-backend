@@ -11,7 +11,6 @@ export const env = {
   // ======================== Shared ========================
   NODE_ENV: process.env["NODE_ENV"] ?? "development",
   PORT: parseInt(process.env["PORT"] ?? "5000", 10),
-  HOST: process.env["HOST"] ?? "0.0.0.0",
   APP_NAME: process.env["APP_NAME"] ?? "",
 
   get isDevelopment() {
