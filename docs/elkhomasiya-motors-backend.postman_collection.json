@@ -80,7 +80,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"googleToken\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6IjMwMzViYjg2ZDk5ZjIyZTYxMzQ2N2E2NjgwODI1ZWViMGQ4MTM5YTIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI4MDk2NzE5MjcwOTQtOHN0cm9lcGo5czBjdGNrOTF1MWlqNW9nYm1jZXBtZXIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI4MDk2NzE5MjcwOTQtOHN0cm9lcGo5czBjdGNrOTF1MWlqNW9nYm1jZXBtZXIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDIzMzczMTg5NDI5MzM5NTE5NDgiLCJlbWFpbCI6ImFiZHVscmFoaW1zYWtyMDFAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiJkUUdGTFNkdFRPTnJUcS0wczJhMUN3IiwibmFtZSI6IkFiZHVscmFoaW0gU2FrciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaG83RW90MkR4Nkg4R25ORVFkSXFtbHNnWGFtMGNDODRwWEVYY1hJN09BeTZwWk5RPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkFiZHVscmFoaW0iLCJmYW1pbHlfbmFtZSI6IlNha3IiLCJpYXQiOjE3ODE4MjM1OTgsImV4cCI6MTc4MTgyNzE5OH0.RUzu7WRPjeLtuvDKlHQiO3LunwMsxIxA3YB0siE3wajgFhNw6vIW4W6SNRSwEBA1tTYmujAqMUORVSaG49HdWU-iAkr0D-Xq9CwZSY7ade8dn1Te5ElkTOLwgEkz3pyr8gzJUiNrUc_FR9bE83SJqWayHF-mBGmUkzdcMukaarMM2R8NqH1Aji1tdcTWrr0NHlEzQ47PP6Oak5gAHbsWXnvh8ghTiFXc0gMCSL0n611LiFC0j8NmWDI8mZ4VJkIpOULr0-zK-PHYQ0PLJ0EDz9Wio-1IBQyRkZTnwzWPxwysPJhM2lPAVIHL6v7SgagClUU28zMvwpsN7Uee9tfKGA\",\n    \"phone\": \"01007137667\"\n}",
+              "raw": "{\n  \"googleToken\": \"{{GOOGLE_TOKEN}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -142,7 +142,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"googleToken\": \"eyJhbGciOiJSUzI1NiIsImtpZCI6IjMwMzViYjg2ZDk5ZjIyZTYxMzQ2N2E2NjgwODI1ZWViMGQ4MTM5YTIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI4MDk2NzE5MjcwOTQtOHN0cm9lcGo5czBjdGNrOTF1MWlqNW9nYm1jZXBtZXIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI4MDk2NzE5MjcwOTQtOHN0cm9lcGo5czBjdGNrOTF1MWlqNW9nYm1jZXBtZXIuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDIzMzczMTg5NDI5MzM5NTE5NDgiLCJlbWFpbCI6ImFiZHVscmFoaW1zYWtyMDFAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsImF0X2hhc2giOiJkUUdGTFNkdFRPTnJUcS0wczJhMUN3IiwibmFtZSI6IkFiZHVscmFoaW0gU2FrciIsInBpY3R1cmUiOiJodHRwczovL2xoMy5nb29nbGV1c2VyY29udGVudC5jb20vYS9BQ2c4b2NLaG83RW90MkR4Nkg4R25ORVFkSXFtbHNnWGFtMGNDODRwWEVYY1hJN09BeTZwWk5RPXM5Ni1jIiwiZ2l2ZW5fbmFtZSI6IkFiZHVscmFoaW0iLCJmYW1pbHlfbmFtZSI6IlNha3IiLCJpYXQiOjE3ODE4MjM1OTgsImV4cCI6MTc4MTgyNzE5OH0.RUzu7WRPjeLtuvDKlHQiO3LunwMsxIxA3YB0siE3wajgFhNw6vIW4W6SNRSwEBA1tTYmujAqMUORVSaG49HdWU-iAkr0D-Xq9CwZSY7ade8dn1Te5ElkTOLwgEkz3pyr8gzJUiNrUc_FR9bE83SJqWayHF-mBGmUkzdcMukaarMM2R8NqH1Aji1tdcTWrr0NHlEzQ47PP6Oak5gAHbsWXnvh8ghTiFXc0gMCSL0n611LiFC0j8NmWDI8mZ4VJkIpOULr0-zK-PHYQ0PLJ0EDz9Wio-1IBQyRkZTnwzWPxwysPJhM2lPAVIHL6v7SgagClUU28zMvwpsN7Uee9tfKGA\"\n}",
+              "raw": "{\n  \"googleToken\": \"{{GOOGLE_TOKEN}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -204,7 +204,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"refreshToken\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTM0Nzg5ZGNlZTAwMTRkYTQzZGViMWQiLCJyb2xlSWQiOiI2YTJjMjllN2ZmNzFmNWNjMTQ1MjJhZjkiLCJpYXQiOjE3ODE4MjM5MjMsImV4cCI6MTc4MjQyODcyMywianRpIjoiODA2NCJ9.Q_FDWUpwdtEuA4Y68GILini8cPu4_NKhtsguOR1oYJc\"\n}",
+              "raw": "{\n  \"refreshToken\": \"{{REFRESH_TOKEN}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -292,7 +292,126 @@
           "response": []
         },
         {
-          "name": "register",
+          "name": "update-email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) {}",
+                  "",
+                  "if (json.data?.accessToken) {",
+                  "  pm.collectionVariables.set(\"ACCESS_TOKEN\", json.data.accessToken);",
+                  "  pm.environment.set(\"ACCESS_TOKEN\", json.data.accessToken);",
+                  "}",
+                  "",
+                  "if (json.data?.refreshToken) {",
+                  "  pm.collectionVariables.set(\"REFRESH_TOKEN\", json.data.refreshToken);",
+                  "  pm.environment.set(\"REFRESH_TOKEN\", json.data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "{{LOCALE}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"googleToken\": \"{{GOOGLE_TOKEN}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/update-email",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "auth",
+                "update-email"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "admin-register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "let json = {};",
+                  "try { json = pm.response.json(); } catch (error) {}",
+                  "",
+                  "if (json.data?.id) {",
+                  "  pm.collectionVariables.set(\"ADMIN_ID\", json.data.id);",
+                  "  pm.environment.set(\"ADMIN_ID\", json.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "{{LOCALE}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{ADMIN_NAME}}\",\n  \"age\": 30,\n  \"gender\": \"male\",\n  \"phone\": \"{{CREATE_ADMIN_PHONE}}\",\n  \"password\": \"{{CREATE_ADMIN_PASSWORD}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{BASE_URL}}/auth/admin-register",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "auth",
+                "admin-register"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "admin-login",
           "event": [
             {
               "listen": "test",
@@ -333,7 +452,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"name\": \"Abdulrahim Sakr\",\n    \"age\": 25,\n    \"gender\": \"male\", // male | female\n    \"phone\": \"01007137667\",\n    \"email\": \"abdulrahimsakr01@gmail.com\",\n    \"password\": \"Abdo1234\"\n}",
+              "raw": "{\n  \"phone\": \"{{ADMIN_PHONE}}\",\n  \"password\": \"{{ADMIN_PASSWORD}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -341,234 +460,20 @@
               }
             },
             "url": {
-              "raw": "{{BASE_URL}}/auth/register",
+              "raw": "{{BASE_URL}}/auth/admin-login",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "auth",
-                "register"
+                "admin-login"
               ]
             }
           },
           "response": []
         },
         {
-          "name": "verify-email",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Accept-Language",
-                "value": "{{LOCALE}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"abdulrahimsakr01@gmail.com\",\n    \"code\": \"939496\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{BASE_URL}}/auth/verify-email",
-              "host": [
-                "{{BASE_URL}}"
-              ],
-              "path": [
-                "auth",
-                "verify-email"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "resend-verification-email",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Accept-Language",
-                "value": "{{LOCALE}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"abdulrahimsakr01@gmail.com\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{BASE_URL}}/auth/resend-verification-email",
-              "host": [
-                "{{BASE_URL}}"
-              ],
-              "path": [
-                "auth",
-                "resend-verification-email"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "let json = {};",
-                  "try { json = pm.response.json(); } catch (error) {}",
-                  "",
-                  "if (json.data?.accessToken) {",
-                  "  pm.collectionVariables.set(\"ACCESS_TOKEN\", json.data.accessToken);",
-                  "  pm.environment.set(\"ACCESS_TOKEN\", json.data.accessToken);",
-                  "}",
-                  "",
-                  "if (json.data?.refreshToken) {",
-                  "  pm.collectionVariables.set(\"REFRESH_TOKEN\", json.data.refreshToken);",
-                  "  pm.environment.set(\"REFRESH_TOKEN\", json.data.refreshToken);",
-                  "}"
-                ],
-                "type": "text/javascript",
-                "packages": {},
-                "requests": {}
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Accept-Language",
-                "value": "{{LOCALE}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"abdulrahimsakr01@gmail.com\", // abdelraheemsakr@gmail.com\n    \"password\": \"Abdo1234\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{BASE_URL}}/auth/login",
-              "host": [
-                "{{BASE_URL}}"
-              ],
-              "path": [
-                "auth",
-                "login"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "forgot-password",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Accept-Language",
-                "value": "{{LOCALE}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"abdulrahimsakr01@gmail.com\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{BASE_URL}}/auth/forgot-password",
-              "host": [
-                "{{BASE_URL}}"
-              ],
-              "path": [
-                "auth",
-                "forgot-password"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "reset-password",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json",
-                "type": "text"
-              },
-              {
-                "key": "Accept-Language",
-                "value": "{{LOCALE}}",
-                "type": "text"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"email\": \"abdulrahimsakr01@gmail.com\",\n    \"code\": \"809348\",\n    \"password\": \"Abdo1234\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{BASE_URL}}/auth/reset-password",
-              "host": [
-                "{{BASE_URL}}"
-              ],
-              "path": [
-                "auth",
-                "reset-password"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "change-password",
+          "name": "admin-update-credentials",
           "request": {
             "method": "PATCH",
             "header": [
@@ -590,7 +495,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"currentPassword\": \"Abdo1234aa\",\n    \"newPassword\": \"Abdo1234\"\n}",
+              "raw": "{\n  \"phone\": \"{{UPDATED_ADMIN_PHONE}}\",\n  \"password\": \"{{UPDATED_ADMIN_PASSWORD}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -598,13 +503,20 @@
               }
             },
             "url": {
-              "raw": "{{BASE_URL}}/auth/change-password",
+              "raw": "{{BASE_URL}}/auth/admin-update-credentials/:id",
               "host": [
                 "{{BASE_URL}}"
               ],
               "path": [
                 "auth",
-                "change-password"
+                "admin-update-credentials",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "{{ADMIN_ID}}"
+                }
               ]
             }
           },
@@ -2320,34 +2232,6 @@
       "value": ""
     },
     {
-      "key": "CUSTOMER_EMAIL",
-      "value": "customer@example.com"
-    },
-    {
-      "key": "PASSWORD",
-      "value": "Password123"
-    },
-    {
-      "key": "NEW_PASSWORD",
-      "value": "Password1234"
-    },
-    {
-      "key": "EMAIL_CODE",
-      "value": "123456"
-    },
-    {
-      "key": "PASSWORD_CODE",
-      "value": "123456"
-    },
-    {
-      "key": "PHONE",
-      "value": "01012345678"
-    },
-    {
-      "key": "ROLE_ID",
-      "value": ""
-    },
-    {
       "key": "CUSTOMER_ID",
       "value": ""
     },
@@ -2382,6 +2266,38 @@
     {
       "key": "INQUIRY_ID",
       "value": ""
+    },
+    {
+      "key": "ADMIN_ID",
+      "value": ""
+    },
+    {
+      "key": "ADMIN_NAME",
+      "value": "Admin User"
+    },
+    {
+      "key": "ADMIN_PHONE",
+      "value": "01000000001"
+    },
+    {
+      "key": "ADMIN_PASSWORD",
+      "value": "Password123"
+    },
+    {
+      "key": "CREATE_ADMIN_PHONE",
+      "value": "01000000004"
+    },
+    {
+      "key": "CREATE_ADMIN_PASSWORD",
+      "value": "Password1234"
+    },
+    {
+      "key": "UPDATED_ADMIN_PHONE",
+      "value": "01000000005"
+    },
+    {
+      "key": "UPDATED_ADMIN_PASSWORD",
+      "value": "Password12345"
     }
   ]
 }

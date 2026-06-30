@@ -19,11 +19,15 @@ import type {
   LoginDTO,
   GoogleRegisterDTO,
   GoogleLoginDTO,
+  UpdateEmailDTO,
   VerifyEmailDTO,
   ResetPasswordDTO,
   ChangePasswordDTO,
+  AdminRegisterDTO,
+  AdminLoginDTO,
+  AdminUpdateCredentialsDTO,
 } from "./auth.validators.js";
-import type { AuthTokens, RegisterResponse } from "./auth.types.js";
+import type { AuthResponse, AuthTokens, RegisterResponse } from "./auth.types.js";
 import { createSession } from "./utils/create-session.js";
 import { normalizePhone } from "./utils/normalize-phone.js";
 import { verifyGoogleToken } from "./utils/verify-google-token.js";
@@ -35,13 +39,11 @@ export class AuthService {
   async googleRegister(data: GoogleRegisterDTO) {
     // step: verify google identity
     const googleUser = await verifyGoogleToken(data.googleToken);
-    const normalizedPhone = normalizePhone(data.phone);
 
-    // step: protect unique google id, email, and phone ownership
-    const [userByGoogleId, userByEmail, userByPhone] = await Promise.all([
+    // step: protect unique google id and email ownership
+    const [userByGoogleId, userByEmail] = await Promise.all([
       UserModel.findOne({ googleId: googleUser.googleId }),
       UserModel.findOne({ email: googleUser.email }),
-      UserModel.findOne({ phone: normalizedPhone }),
     ]);
 
     if (userByGoogleId) {
@@ -50,10 +52,6 @@ export class AuthService {
 
     if (userByEmail) {
       throw new ConflictError("auth.emailAlreadyExists");
-    }
-
-    if (userByPhone) {
-      throw new ConflictError("auth.phoneAlreadyUsed");
     }
 
     // step: create customer role account
@@ -67,7 +65,6 @@ export class AuthService {
     const user = await UserModel.create({
       name: googleUser.name,
       email: googleUser.email,
-      phone: normalizedPhone,
       profileImage: googleUser.picture,
       roleId: customerRole._id,
       googleId: googleUser.googleId,
@@ -81,7 +78,6 @@ export class AuthService {
         id: String(user._id),
         name: user.name,
         email: user.email,
-        phone: user.phone,
         roleId: String(user.roleId),
         emailConfirmed: user.isEmailConfirmed,
       },
@@ -102,6 +98,51 @@ export class AuthService {
     });
 
     if (!user) throw new UnauthorizedError("auth.googleNotRegistered");
+
+    // step: create auth session
+    const tokens = await createSession(String(user._id), String(user.roleId));
+
+    // step: result
+    return {
+      user: {
+        id: String(user._id),
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        roleId: String(user.roleId),
+        emailConfirmed: user.isEmailConfirmed,
+      },
+      ...tokens,
+    };
+  }
+
+  // ============================ updateEmail ============================
+  async updateEmail(data: UpdateEmailDTO): Promise<AuthResponse> {
+    // step: verify google identity
+    const googleUser = await verifyGoogleToken(data.googleToken);
+
+    // step: find the active google account
+    const user = await UserModel.findOne({
+      googleId: googleUser.googleId,
+      authProvider: AuthProvider.google,
+      isActive: true,
+    });
+
+    if (!user) throw new UnauthorizedError("auth.googleNotRegistered");
+
+    // step: protect email ownership before syncing from google
+    if (user.email !== googleUser.email) {
+      const emailOwner = await UserModel.findOne({
+        email: googleUser.email,
+        _id: { $ne: user._id },
+      });
+
+      if (emailOwner) throw new ConflictError("auth.emailAlreadyExists");
+
+      user.email = googleUser.email;
+      user.isEmailConfirmed = true;
+      await user.save();
+    }
 
     // step: create auth session
     const tokens = await createSession(String(user._id), String(user.roleId));
@@ -163,6 +204,151 @@ export class AuthService {
     // step: find active user
     const user = await UserModel.findById(userId).lean({ getters: true });
     if (!user || !user.isActive) throw new NotFoundError("resource.user");
+
+    // step: result
+    return {
+      id: String(user._id),
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      roleId: String(user.roleId),
+      emailConfirmed: user.isEmailConfirmed,
+    };
+  }
+
+  // ============================ adminRegister ============================
+  async adminRegister(data: AdminRegisterDTO) {
+    // step: normalize and protect unique phone ownership
+    const normalizedPhone = normalizePhone(data.phone);
+    const [adminRole, userByPhone] = await Promise.all([
+      RoleModel.findOne({ slug: "admin", isActive: true }),
+      UserModel.findOne({ phone: normalizedPhone }),
+    ]);
+
+    if (!adminRole) throw new BadRequestError("auth.adminRoleNotConfigured");
+    if (userByPhone) throw new ConflictError("auth.phoneAlreadyUsed");
+
+    // step: create admin role account
+    const user = await UserModel.create({
+      name: data.name,
+      age: data.age,
+      gender: data.gender,
+      phone: normalizedPhone,
+      password: await hashData(data.password),
+      authProvider: AuthProvider.local,
+      roleId: adminRole._id,
+      isEmailConfirmed: true,
+    });
+
+    // step: result
+    return {
+      id: String(user._id),
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      roleId: String(user.roleId),
+      emailConfirmed: user.isEmailConfirmed,
+    };
+  }
+
+  // ============================ adminLogin ============================
+  async adminLogin(data: AdminLoginDTO): Promise<AuthResponse> {
+    // step: normalize phone and retrieve active admin role
+    const normalizedPhone = normalizePhone(data.phone);
+    const adminRole = await RoleModel.findOne({
+      slug: "admin",
+      isActive: true,
+    })
+      .select("_id")
+      .lean();
+
+    if (!adminRole) throw new BadRequestError("auth.adminRoleNotConfigured");
+
+    // step: find active admin with password
+    const user = await UserModel.findOne({
+      phone: normalizedPhone,
+      isActive: true,
+      authProvider: AuthProvider.local,
+      roleId: adminRole._id,
+    }).select("+password");
+
+    // step: validate password
+    if (!user?.password || !(await compareData(data.password, user.password))) {
+      throw new UnauthorizedError("auth.invalidCredentials");
+    }
+
+    // step: create auth session
+    const tokens = await createSession(String(user._id), String(user.roleId));
+
+    // step: result
+    return {
+      user: {
+        id: String(user._id),
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        roleId: String(user.roleId),
+        emailConfirmed: user.isEmailConfirmed,
+      },
+      ...tokens,
+    };
+  }
+
+  // ============================ adminUpdateCredentials ============================
+  async adminUpdateCredentials(
+    adminId: string,
+    data: AdminUpdateCredentialsDTO,
+  ) {
+    // step: require at least one credential field
+    if (data.phone === undefined && data.password === undefined) {
+      throw new BadRequestError("auth.credentialsFieldsRequired");
+    }
+
+    // step: retrieve active admin role
+    const adminRole = await RoleModel.findOne({
+      slug: "admin",
+      isActive: true,
+    })
+      .select("_id")
+      .lean();
+
+    if (!adminRole) throw new BadRequestError("auth.adminRoleNotConfigured");
+
+    // step: find active local admin account
+    const user = await UserModel.findOne({
+      _id: adminId,
+      roleId: adminRole._id,
+      authProvider: AuthProvider.local,
+      isActive: true,
+    }).select("+password");
+
+    if (!user) throw new NotFoundError("resource.user");
+
+    // step: protect phone ownership
+    if (data.phone !== undefined) {
+      const normalizedPhone = normalizePhone(data.phone);
+      const owner = await UserModel.findOne({
+        phone: normalizedPhone,
+        _id: { $ne: user._id },
+      });
+
+      if (owner) throw new ConflictError("auth.phoneAlreadyUsed");
+
+      user.phone = normalizedPhone;
+    }
+
+    // step: update password when supplied
+    if (data.password !== undefined) {
+      user.password = await hashData(data.password);
+    }
+
+    // step: save credentials and revoke active sessions
+    user.credentialsChangedAt = new Date();
+    await user.save();
+    await RefreshTokenModel.updateMany(
+      { userId: user._id, revokedAt: { $exists: false } },
+      { $set: { revokedAt: new Date() } },
+    );
 
     // step: result
     return {

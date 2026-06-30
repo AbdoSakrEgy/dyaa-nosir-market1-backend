@@ -39,7 +39,7 @@ const inquirySchema = new Schema(
     userId: { type: Schema.Types.ObjectId, ref: "User" },
     createdByAdminId: { type: Schema.Types.ObjectId, ref: "User" },
     customerName: { type: String, trim: true },
-    phone: { type: [String], required: true },
+    phone: { type: [String], default: [] },
     email: { type: String, trim: true, lowercase: true },
     productId: { type: Schema.Types.ObjectId, ref: "Product", required: true },
     quantity: { type: Number, required: true, min: 1 },

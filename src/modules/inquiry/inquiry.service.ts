@@ -77,11 +77,16 @@ export class InquiryService {
       .lean();
     if (!customer) throw new NotFoundError("resource.user");
 
+    // sub-step: use the account phone when the customer has one
+    const customerPhones = customer.phone
+      ? [normalizeInquiryPhone(customer.phone)]
+      : [];
+
     // step: create manual inquiry with the admin response already recorded
     return InquiryModel.create({
       userId: data.userId,
       customerName: customer.name,
-      phone: [normalizeInquiryPhone(customer.phone)],
+      phone: customerPhones,
       email: customer.email,
       productId: data.productId,
       quantity: data.quantity,

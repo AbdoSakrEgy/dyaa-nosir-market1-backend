@@ -6,7 +6,11 @@ import type {
   LoginDTO,
   GoogleRegisterDTO,
   GoogleLoginDTO,
+  UpdateEmailDTO,
   RefreshTokenDTO,
+  AdminRegisterDTO,
+  AdminLoginDTO,
+  AdminUpdateCredentialsDTO,
   EmailDTO,
   VerifyEmailDTO,
   ResetPasswordDTO,
@@ -33,6 +37,13 @@ export class AuthController {
     const data = req.body as GoogleLoginDTO;
     const result = await authService.googleLogin(data);
     responseHandler(res, HttpStatusCode.OK, "auth.googleLogin.success", result);
+  }
+
+  // ---------------------------- updateEmail ----------------------------
+  async updateEmail(req: Request, res: Response): Promise<void> {
+    const data = req.body as UpdateEmailDTO;
+    const result = await authService.updateEmail(data);
+    responseHandler(res, HttpStatusCode.OK, "auth.updateEmail.success", result);
   }
 
   // ---------------------------- refreshToken ----------------------------
@@ -63,6 +74,40 @@ export class AuthController {
       HttpStatusCode.OK,
       "profile.retrieved",
       user,
+    );
+  }
+
+  // ---------------------------- adminRegister ----------------------------
+  async adminRegister(req: Request, res: Response): Promise<void> {
+    const data = req.body as AdminRegisterDTO;
+    const result = await authService.adminRegister(data);
+    responseHandler(
+      res,
+      HttpStatusCode.CREATED,
+      "auth.adminRegister.success",
+      result,
+    );
+  }
+
+  // ---------------------------- adminLogin ----------------------------
+  async adminLogin(req: Request, res: Response): Promise<void> {
+    const data = req.body as AdminLoginDTO;
+    const result = await authService.adminLogin(data);
+    responseHandler(res, HttpStatusCode.OK, "auth.adminLogin.success", result);
+  }
+
+  // ---------------------------- adminUpdateCredentials ----------------------------
+  async adminUpdateCredentials(req: Request, res: Response): Promise<void> {
+    const data = req.body as AdminUpdateCredentialsDTO;
+    const result = await authService.adminUpdateCredentials(
+      req.params["id"] as string,
+      data,
+    );
+    responseHandler(
+      res,
+      HttpStatusCode.OK,
+      "auth.adminUpdateCredentials.success",
+      result,
     );
   }
 

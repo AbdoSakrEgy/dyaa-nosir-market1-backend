@@ -12,12 +12,12 @@ export interface IUser {
   name: string;
   age?: number;
   gender: Gender;
-  phone: string;
+  phone?: string;
   profileImage?: string;
 
   // access
   roleId: Types.ObjectId;
-  email: string;
+  email?: string;
   password?: string;
   authProvider: AuthProvider;
   googleId?: string;
@@ -60,13 +60,13 @@ const userSchema = new Schema<IUser>(
       type: String,
       trim: true,
       validate: {
-        validator: isValidPhone,
+        validator: (value?: string) => !value || isValidPhone(value),
         message: (props: { value: string }) =>
           `${props.value} is not a valid phone number!`,
       },
       unique: true,
-      required: true,
-      set: (value: string) => (value ? normalizePhone(value) : value),
+      sparse: true,
+      set: (value?: string) => (value ? normalizePhone(value) : value),
     },
     profileImage: { type: String },
 
@@ -77,7 +77,7 @@ const userSchema = new Schema<IUser>(
       trim: true,
       lowercase: true,
       unique: true,
-      required: true,
+      sparse: true,
     },
     password: {
       type: String,

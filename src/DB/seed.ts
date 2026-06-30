@@ -12,6 +12,7 @@ import { ReviewModel } from "./models/shopping/review.model.js";
 import { StockTransactionModel } from "./models/shopping/stock-transaction.model.js";
 import { UserModel } from "./models/user/user.model.js";
 import { RoleModel } from "./models/user/role.model.js";
+import { AuthProvider } from "../shared/types/shared.types.js";
 
 const seedDatabase = async (): Promise<void> => {
   await connectDatabase();
@@ -77,8 +78,8 @@ const seedDatabase = async (): Promise<void> => {
   const customer = await UserModel.create({
     name: "Ahmed Customer",
     email: "customer@example.com",
-    phone: "01000000003",
-    password,
+    googleId: "seed-google-customer",
+    authProvider: AuthProvider.google,
     roleId: customerRole._id,
     isEmailConfirmed: true,
   });
